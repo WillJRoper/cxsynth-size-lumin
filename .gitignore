@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Apple / Mac OS X stupidness 
+.DS_Store
+*.DS_Store
+
 # C extensions
 *.so
 

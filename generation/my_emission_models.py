@@ -17,84 +17,43 @@ from synthesizer.grid import Template
 from unyt import Hz, Myr, angstrom, erg, s
 
 
-class LOSStellarEmission(StellarEmissionModel):
+class LOSStellarEmission(EmissionModel):
     """
     The stellar emission model used for in FLARES.
 
     This model is a subclass of the StellarEmissionModel class and is used
-    to generate the stellar emission for galaxies.
+    to generate the stellar emission for galaxies in FLARES.
     """
 
-    def __init__(self, grid, fesc=0.0, fesc_ly_alpha=1.0):
+    def __init__(self, grid, agn_template_file):
         """
-        Initialize the LOSStellarEmission model.
+        Initialize the FLARESLOSEmission model.
 
         Args:
             grid (Grid): The grid to use for the model.
         """
-        # Define the incident models
-        young_incident = StellarEmissionModel(
-            grid=grid,
-            label="young_incident",
-            extract="incident",
-            mask_attr="ages",
-            mask_op="<",
-            mask_thresh=10 * Myr,
-        )
-        old_incident = StellarEmissionModel(
-            grid=grid,
-            label="old_incident",
-            extract="incident",
-            mask_attr="ages",
-            mask_op=">=",
-            mask_thresh=10 * Myr,
-        )
-        incident = StellarEmissionModel(
-            grid=grid,
-            label="incident",
-            combine=[young_incident, old_incident],
-        )
-
         # Define the nebular emission models
-        young_nebular = NebularEmission(
-            grid=grid,
-            label="young_nebular",
-            fesc=fesc,
-            fesc_ly_alpha=fesc_ly_alpha,
-            mask_attr="ages",
-            mask_op="<",
-            mask_thresh=10 * Myr,
-        )
-        old_nebular = NebularEmission(
-            grid=grid,
-            label="old_nebular",
-            fesc=fesc,
-            fesc_ly_alpha=fesc_ly_alpha,
-            mask_attr="ages",
-            mask_op=">=",
-            mask_thresh=10 * Myr,
-        )
-        nebular = StellarEmissionModel(
+        nebular = NebularEmission(
             grid=grid,
             label="nebular",
-            combine=[young_nebular, old_nebular],
+            mask_attr="ages",
+            mask_op="<=",
+            mask_thresh=10 * Myr,
         )
 
         # Define the transmitted models
         young_transmitted = TransmittedEmission(
             grid=grid,
             label="young_transmitted",
-            fesc=fesc,
             mask_attr="ages",
-            mask_op="<",
+            mask_op="<=",
             mask_thresh=10 * Myr,
         )
         old_transmitted = TransmittedEmission(
             grid=grid,
             label="old_transmitted",
-            fesc=fesc,
             mask_attr="ages",
-            mask_op=">=",
+            mask_op=">",
             mask_thresh=10 * Myr,
         )
         transmitted = StellarEmissionModel(
@@ -107,38 +66,27 @@ class LOSStellarEmission(StellarEmissionModel):
         young_reprocessed = ReprocessedEmission(
             grid=grid,
             label="young_reprocessed",
-            fesc=fesc,
             transmitted=young_transmitted,
-            nebular=young_nebular,
+            nebular=nebular,
             mask_attr="ages",
-            mask_op="<",
-            mask_thresh=10 * Myr,
-        )
-        old_reprocessed = ReprocessedEmission(
-            grid=grid,
-            label="old_reprocessed",
-            fesc=fesc,
-            transmitted=old_transmitted,
-            nebular=old_nebular,
-            mask_attr="ages",
-            mask_op=">=",
+            mask_op="<=",
             mask_thresh=10 * Myr,
         )
         reprocessed = StellarEmissionModel(
             grid=grid,
             label="reprocessed",
-            combine=[young_reprocessed, old_reprocessed],
+            combine=[young_reprocessed, old_transmitted],
         )
 
         # Define the attenuated models
         young_attenuated_nebular = StellarEmissionModel(
             grid=grid,
             label="young_attenuated_nebular",
-            apply_dust_to=young_nebular,
+            apply_dust_to=young_reprocessed,
             tau_v="young_tau_v",
-            dust_curve=PowerLaw(slope=-1.3),
+            dust_curve=PowerLaw(slope=-1),
             mask_attr="ages",
-            mask_op="<",
+            mask_op="<=",
             mask_thresh=10 * Myr,
         )
         young_attenuated = StellarEmissionModel(
@@ -146,85 +94,33 @@ class LOSStellarEmission(StellarEmissionModel):
             label="young_attenuated",
             apply_dust_to=young_attenuated_nebular,
             tau_v="tau_v",
-            dust_curve=PowerLaw(slope=-0.7),
+            dust_curve=PowerLaw(slope=-1),
             mask_attr="ages",
-            mask_op="<",
+            mask_op="<=",
             mask_thresh=10 * Myr,
         )
         old_attenuated = StellarEmissionModel(
             grid=grid,
             label="old_attenuated",
-            apply_dust_to=old_reprocessed,
+            apply_dust_to=old_transmitted,
             tau_v="tau_v",
-            dust_curve=PowerLaw(slope=-0.7),
+            dust_curve=PowerLaw(slope=-1),
             mask_attr="ages",
-            mask_op=">=",
+            mask_op=">",
             mask_thresh=10 * Myr,
         )
 
-        # If we have an escape fraction, we need to include the escaped
-        # emission
-        young_escaped = EscapedEmission(
-            grid,
-            fesc=fesc,
-            label="young_escaped",
-            mask_attr="ages",
-            mask_op="<",
-            mask_thresh=10 * Myr,
-        )
-        old_escaped = EscapedEmission(
-            grid,
-            fesc=fesc,
-            label="old_escaped",
-            mask_attr="ages",
-            mask_op=">=",
-            mask_thresh=10 * Myr,
-        )
-        escaped = StellarEmissionModel(
-            grid=grid,
-            label="escaped",
-            combine=[young_escaped, old_escaped],
-        )
-
-        # Define the intrinsc emission (we have this since there is an escape
-        # fraction)
-        young_intrinsic = StellarEmissionModel(
-            grid=grid,
-            label="young_intrinsic",
-            combine=[young_reprocessed, young_escaped],
-        )
-        old_intrinsic = StellarEmissionModel(
-            grid=grid,
-            label="old_intrinsic",
-            combine=[old_reprocessed, old_escaped],
-        )
-        intrinsic = StellarEmissionModel(
-            grid=grid,
-            label="stellar_intrinsic",
-            combine=[young_intrinsic, old_intrinsic],
-        )
-
-        # Define the attenuated
-        attenuated = StellarEmissionModel(
-            grid=grid,
-            label="stellar_attenuated",
-            combine=[young_attenuated, old_attenuated],
-        )
-
-        # Make the total
+        # Finaly, combine to get the emergent emission
         EmissionModel.__init__(
             self,
             grid=grid,
-            emitter="stellar",
             label="stellar_total",
-            combine=[escaped, attenuated],
+            combine=[young_attenuated, old_attenuated],
             related_models=[
-                incident,
                 nebular,
                 transmitted,
                 reprocessed,
                 young_attenuated_nebular,
-                intrinsic,
             ],
         )
 

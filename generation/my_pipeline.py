@@ -11,8 +11,8 @@ import h5py
 import numpy as np
 from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
-from combined_emission_model import LOSStellarEmission
 from mpi4py import MPI as mpi
+from my_emission_models import LOSStellarEmission
 from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection

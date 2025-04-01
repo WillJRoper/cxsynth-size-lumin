@@ -13,13 +13,13 @@ from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
 from my_emission_models import LOSStellarEmission
+from my_extra_analysis import get_pixel_based_hlr
 from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
 from synthesizer.pipeline import Pipeline
 from unyt import Msun, angstrom, kpc
-from my_extra_analysis import get_pixel_based_hlr, 
 
 # Silence warnings (only because we now what we're doing)
 warnings.filterwarnings("ignore")

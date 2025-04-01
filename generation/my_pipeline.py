@@ -74,12 +74,13 @@ def load_galaxies(
     # Loop over galaxies and calculate the optical depths
     for gal in galaxies:
         if gal.gas.nparticles > 0:
-            gal.get_stellar_los_tau_v(
+            gal.stars.tau_v = gal.get_stellar_los_tau_v(
                 kappa=0.0795,
                 kernel=kernel_data,
             )
         else:
             gal.stars.tau_v = np.zeros(gal.stars.nparticles)
+        print(gal.stars.tau_v)
 
     return galaxies
 

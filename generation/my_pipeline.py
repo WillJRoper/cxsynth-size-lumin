@@ -243,6 +243,10 @@ if __name__ == "__main__":
     # Define the instrument path
     inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
 
+    # Create the directory if it doesn't exist
+    if rank == 0 and not os.path.exists(f"../data/{run_name}/{variant}"):
+        os.makedirs(f"../data/{run_name}/{variant}")
+
     # If the output already exists just exit
     if os.path.exists(outpath):
         print(f"Output file {outpath} already exists.")

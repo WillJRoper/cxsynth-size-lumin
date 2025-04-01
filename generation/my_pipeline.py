@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
     # Make the instrument collection for this redshift if it doesn't exist
     if rank == 0 and not os.path.exists(inst_path):
-        make_instruments(run_name, variant, redshift)
+        make_instruments(inst_path, redshift)
 
     # Can't move on until we have the instruments file made
     comm.Barrier()

@@ -22,6 +22,7 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
         "stellar_mass",
     )
     stellar_masses = stellar_masses.to("Msun")
+    print(stellar_masses.shape, lower_mass_lim)
 
     # Create an array of galaxy indices
     gal_inds = np.arange(len(stellar_masses))

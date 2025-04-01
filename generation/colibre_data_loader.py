@@ -6,7 +6,7 @@ import swiftsimio
 from mpi4py import MPI as mpi
 from swiftgalaxy import SOAP, SWIFTGalaxies
 from synthesizer.particle import Galaxy, Gas, Stars
-from unyt import Gyr, Msun, Myr, kpc
+from unyt import Gyr, Myr, kpc
 
 
 def partition_galaxies(location, snap, lower_mass_lim, aperture):
@@ -17,22 +17,21 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
 
     # Read in the masses so we can make a cut based on the stellar mass
     cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
-    stellar_masses = getattr(
+    nstars = getattr(
         getattr(cat, f"exclusive_sphere_{int(aperture)}kpc"),
-        "stellar_mass",
-    )
-    stellar_masses = stellar_masses.to("Msun")
+        "number_of_star_particles",
+    ).to_value()
 
     # Create an array of galaxy indices
-    gal_inds = np.arange(len(stellar_masses))
+    gal_inds = np.arange(len(nstars))
 
     # Sanitise away galaxies below the threshold
-    gal_inds = gal_inds[stellar_masses >= lower_mass_lim * Msun]
+    gal_inds = gal_inds[nstars >= 100]
 
     # Split the galaxies between the processes
     indices = np.array_split(gal_inds, nranks)
 
-    return indices[this_rank], stellar_masses
+    return indices[this_rank]
 
 
 def _set_up_swift_galaxy(

@@ -328,10 +328,10 @@ if __name__ == "__main__":
     pipeline.add_galaxies(list(galaxies))
 
     # Run the pipeline
-    # pipeline.get_photometry_luminosities()
+    pipeline.get_photometry_luminosities()
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
-    # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
     pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
 
     # Run the pipeline

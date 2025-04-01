@@ -13,13 +13,14 @@ from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
 from my_emission_models import LOSStellarEmission
-from my_extra_analysis import get_pixel_based_hlr
+
+# from my_extra_analysis import get_pixel_based_hlr
 from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
 from synthesizer.pipeline import Pipeline
-from unyt import Msun, angstrom, kpc
+from unyt import Msun, angstrom
 
 # Silence warnings (only because we now what we're doing)
 warnings.filterwarnings("ignore")
@@ -290,34 +291,34 @@ if __name__ == "__main__":
     )
 
     # Add the extra analysis functions we want
-    for frac in [0.2, 0.5, 0.8]:
-        frac_key = f"{frac}".replace(".", "p")
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.stars.get_attr_radius(
-                "current_masses",
-                frac=frac,
-            ),
-            f"Stars/MassRadii/{frac_key}",
-        )
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius(
-                "masses",
-                frac=frac,
-            ),
-            f"Gas/MassRadii/{frac_key}",
-        )
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius(
-                "dust_masses",
-                frac=frac,
-            ),
-            f"Gas/DustMassRadii/{frac_key}",
-        )
-    pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
-    pipeline.add_analysis_func(
-        lambda gal: get_pixel_based_hlr(gal.stars),
-        "Stars/PixelHalfLightRadii",
-    )
+    # for frac in [0.2, 0.5, 0.8]:
+    #     frac_key = f"{frac}".replace(".", "p")
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.stars.get_attr_radius(
+    #             "current_masses",
+    #             frac=frac,
+    #         ),
+    #         f"Stars/MassRadii/{frac_key}",
+    #     )
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
+    #             "masses",
+    #             frac=frac,
+    #         ),
+    #         f"Gas/MassRadii/{frac_key}",
+    #     )
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
+    #             "dust_masses",
+    #             frac=frac,
+    #         ),
+    #         f"Gas/DustMassRadii/{frac_key}",
+    #     )
+    # pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_pixel_based_hlr(gal.stars),
+    #     "Stars/PixelHalfLightRadii",
+    # )
     pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
     pipeline.add_analysis_func(
         lambda gal: gal.stars.get_mass_weighted_optical_depth(),
@@ -331,8 +332,8 @@ if __name__ == "__main__":
     pipeline.get_photometry_luminosities()
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
-    pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
-    pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
+    # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    # pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
 
     # Run the pipeline
     pipeline.run()

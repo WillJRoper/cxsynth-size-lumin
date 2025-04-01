@@ -243,11 +243,6 @@ if __name__ == "__main__":
     if rank == 0 and not os.path.exists(f"../data/{run_name}/{variant}"):
         os.makedirs(f"../data/{run_name}/{variant}")
 
-    # If the output already exists just exit
-    if os.path.exists(outpath):
-        print(f"Output file {outpath} already exists.")
-        exit(0)
-
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
 

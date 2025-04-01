@@ -320,10 +320,10 @@ if __name__ == "__main__":
     #     "Stars/PixelHalfLightRadii",
     # )
     pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
-    pipeline.add_analysis_func(
-        lambda gal: gal.stars.get_mass_weighted_optical_depth(),
-        "Stars/MassWeightedVBandOpticalDepth",
-    )
+    # pipeline.add_analysis_func(
+    #     lambda gal: gal.stars.get_mass_weighted_optical_depth(),
+    #     "Stars/MassWeightedVBandOpticalDepth",
+    # )
 
     # Add them to the pipeline
     pipeline.add_galaxies(list(galaxies))

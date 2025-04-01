@@ -121,6 +121,7 @@ class LOSStellarEmission(EmissionModel):
                 reprocessed,
                 young_attenuated_nebular,
             ],
+            emitter="stellar",
         )
 
         self.set_per_particle(True)

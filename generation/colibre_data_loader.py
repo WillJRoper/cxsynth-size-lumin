@@ -6,7 +6,7 @@ import swiftsimio
 from mpi4py import MPI as mpi
 from swiftgalaxy import SOAP, SWIFTGalaxies
 from synthesizer.particle import Galaxy, Gas, Stars
-from unyt import Gyr, Msun, Myr
+from unyt import Gyr, Msun, Myr, kpc
 
 
 def partition_galaxies(location, snap, lower_mass_lim, aperture):
@@ -22,7 +22,6 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
         "stellar_mass",
     )
     stellar_masses = stellar_masses.to("Msun")
-    print(stellar_masses.shape, lower_mass_lim)
 
     # Create an array of galaxy indices
     gal_inds = np.arange(len(stellar_masses))
@@ -129,13 +128,13 @@ def _get_galaxies(
     for gal_ind, swift_gal in zip(sgs.iteration_order, sgs):
         # Derive the radii for star and gas particles
         star_coords = swift_gal.stars.coordinates.to_physical()
-        star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1)
+        star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1).to("kpc")
         gas_coords = swift_gal.gas.coordinates.to_physical()
-        gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1)
+        gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1).to("kpc")
 
         # Define masks for the particles within the aperture
-        star_mask = star_radii <= aperture
-        gas_mask = gas_radii <= aperture
+        star_mask = star_radii <= aperture * kpc
+        gas_mask = gas_radii <= aperture * kpc
 
         # Derive the ages from the scale_factors
         scale_factors = swift_gal.stars.birth_scale_factors.to_value()

@@ -178,7 +178,7 @@ def _get_galaxies(
                 smoothing_lengths=swift_gal.stars.smoothing_lengths.to_physical()[
                     star_mask
                 ],
-                young_tau_v=young_tau_v[star_mask],
+                young_tau_v=young_tau_v[star_mask].to_value(),
                 radii=star_radii[star_mask],
                 redshift=redshift,
             ),

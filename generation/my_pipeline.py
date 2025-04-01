@@ -18,7 +18,7 @@ from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
 from synthesizer.pipeline import Pipeline
-from unyt import Msun, angstrom
+from unyt import Msun, angstrom, kpc
 
 # Silence warnings (only because we now what we're doing)
 warnings.filterwarnings("ignore")
@@ -328,7 +328,7 @@ if __name__ == "__main__":
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
     # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
-    # pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
+    pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
 
     # Run the pipeline
     pipeline.run()

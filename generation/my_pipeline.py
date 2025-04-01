@@ -224,6 +224,15 @@ if __name__ == "__main__":
         Neff=Neff,
     )
 
+    # Read in the redshift and while we do it make sure we actually have
+    # SOAP data for this snap
+    try:
+        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+            redshift = hf["Cosmology"].attrs["Redshift"]
+    except FileNotFoundError:
+        print(f"No SOAP data for snapshot {snap}.")
+        exit(0)
+
     # Get the redshift of this snapshot
     redshifts = np.genfromtxt(
         f"{run_folder}/{run_name}/{variant}/output_list.txt",
@@ -246,10 +255,6 @@ if __name__ == "__main__":
 
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
-
-    # Read in the redshift
-    with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
-        redshift = hf["Cosmology"].attrs["Redshift"]
 
     # Make the instrument collection for this redshift if it doesn't exist
     if rank == 0 and not os.path.exists(inst_path):

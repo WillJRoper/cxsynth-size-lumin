@@ -326,7 +326,7 @@ if __name__ == "__main__":
     # )
 
     # Add them to the pipeline
-    pipeline.add_galaxies(galaxies)
+    pipeline.add_galaxies(list(galaxies))
 
     # Run the pipeline
     # pipeline.get_photometry_luminosities()

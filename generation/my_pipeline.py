@@ -238,10 +238,10 @@ if __name__ == "__main__":
     redshift = redshifts[args.snap_ind]
 
     # Define the output path
-    outpath = f"data/{run_name}/{variant}/Synthesized_imgs_{snap}.hdf5"
+    outpath = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}.hdf5"
 
     # Define the instrument path
-    inst_path = f"data/{run_name}/{variant}/instruments_{snap}.hdf5"
+    inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
 
     # If the output already exists just exit
     if os.path.exists(outpath):

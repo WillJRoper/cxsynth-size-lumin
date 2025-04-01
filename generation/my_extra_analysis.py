@@ -62,9 +62,6 @@ def get_pixel_based_hlr(obj):
     Returns:
         dict: A dictionary containing the half-light radius for each instrument.
     """
-    # Only care about stars
-    obj = obj.stars
-
     results = {}
 
     # Loop over instruments

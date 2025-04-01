@@ -24,7 +24,7 @@ class LOSStellarEmission(EmissionModel):
     to generate the stellar emission for galaxies in FLARES.
     """
 
-    def __init__(self, grid, agn_template_file):
+    def __init__(self, grid):
         """
         Initialize the FLARESLOSEmission model.
 

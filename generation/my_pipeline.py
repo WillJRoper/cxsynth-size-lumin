@@ -94,11 +94,7 @@ def get_emission_model(
         grid_dir,
         lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
     )
-    model = LOSStellarEmission(
-        grid,
-        fesc=fesc,
-        fesc_ly_alpha=fesc_ly_alpha,
-    )
+    model = LOSStellarEmission(grid)
 
     # # Limit the spectra to be saved
     # model.save_spectra("attenuated", "reprocessed")
@@ -286,12 +282,7 @@ if __name__ == "__main__":
 
     # Set up the pipeline
     pipeline = Pipeline(
-        emission_model=get_emission_model(
-            grid_name,
-            grid_dir,
-            fesc=0.0,
-            fesc_ly_alpha=1.0,
-        ),
+        emission_model=get_emission_model(grid_name, grid_dir),
         instruments=InstrumentCollection(filepath=inst_path),
         nthreads=nthreads,
         comm=comm,

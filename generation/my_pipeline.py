@@ -7,11 +7,13 @@ import time
 import warnings
 from functools import partial
 
+import h5py
 import numpy as np
 from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from combined_emission_model import LOSStellarEmission
 from mpi4py import MPI as mpi
+from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
@@ -238,6 +240,9 @@ if __name__ == "__main__":
     # Define the output path
     outpath = f"data/{run_name}/{variant}/Synthesized_imgs_{snap}.hdf5"
 
+    # Define the instrument path
+    inst_path = f"data/{run_name}/{variant}/instruments_{snap}.hdf5"
+
     # If the output already exists just exit
     if os.path.exists(outpath):
         print(f"Output file {outpath} already exists.")
@@ -245,6 +250,17 @@ if __name__ == "__main__":
 
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
+
+    # Read in the redshift
+    with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+        redshift = hf["Cosmology"].attrs["Redshift"]
+
+    # Make the instrument collection for this redshift if it doesn't exist
+    if rank == 0 and not os.path.exists(inst_path):
+        make_instruments(run_name, variant, redshift)
+
+    # Can't move on until we have the instruments file made
+    comm.Barrier()
 
     # Partition and load the galaxies
     read_start = time.perf_counter()
@@ -272,7 +288,7 @@ if __name__ == "__main__":
             fesc=0.0,
             fesc_ly_alpha=1.0,
         ),
-        instruments=InstrumentCollection(filepath=f"colibre_instruments_{snap}.hdf5"),
+        instruments=InstrumentCollection(filepath=inst_path),
         nthreads=nthreads,
         comm=comm,
     )

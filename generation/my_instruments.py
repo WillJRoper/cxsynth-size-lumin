@@ -37,7 +37,14 @@ top_hat = FilterCollection(
 )
 
 
-if __name__ == "__main__":
+def make_instruments(inst_path, z):
+    """
+    Generate the instrument files for the COLIBRE analysis.
+
+    Args:
+        inst_path (str): The path to save the instruments.
+        z (float): The redshift of the galaxies.
+    """
     # Set up the PSF dictionaries and webbpsf objects
     nircam_psfs = {}
     miri_psfs = {}
@@ -60,39 +67,32 @@ if __name__ == "__main__":
     nircam_res = 0.031 * arcsecond
     miri_res = 0.111 * arcsecond
 
-    # Loop over snapshots making the isnturment file for each redshift
-    # (If imaging worked in angular coordinates, we could just use the same
-    # instrument file for all snapshots)
-    for snap in snapshots:
-        # Get the redshift
-        z = float(snap.split("_")[1].replace("z", "").replace("p", "."))
+    # Convert the angular resolutions to physical kpc
+    arcsec_to_kpc = (
+        cosmo.kpc_proper_per_arcmin(z).to("kpc/arcsec").value * kpc / arcsecond
+    )
 
-        # Convert the angular resolutions to physical kpc
-        arcsec_to_kpc = (
-            cosmo.kpc_proper_per_arcmin(z).to("kpc/arcsec").value * kpc / arcsecond
-        )
+    # Set up the instruments
+    nircam = Instrument(
+        "JWST.NIRCam",
+        filters=nircam_fs,
+        psfs=nircam_psfs,
+        resolution=arcsec_to_kpc * nircam_res,
+    )
+    miri = Instrument(
+        "JWST.MIRI",
+        filters=miri_fs,
+        psfs=miri_psfs,
+        resolution=arcsec_to_kpc * miri_res,
+    )
+    uv = Instrument(
+        "UV1500",
+        filters=top_hat,
+        resolution=2.66 / (1 + z) * kpc,
+    )
 
-        # Set up the instruments
-        nircam = Instrument(
-            "JWST.NIRCam",
-            filters=nircam_fs,
-            psfs=nircam_psfs,
-            resolution=arcsec_to_kpc * nircam_res,
-        )
-        miri = Instrument(
-            "JWST.MIRI",
-            filters=miri_fs,
-            psfs=miri_psfs,
-            resolution=arcsec_to_kpc * miri_res,
-        )
-        uv = Instrument(
-            "UV1500",
-            filters=top_hat,
-            resolution=2.66 / (1 + z) * kpc,
-        )
+    # Combine them
+    instruments = nircam + miri + uv
 
-        # Combine them
-        instruments = nircam + miri + uv
-
-        # Save the instruments
-        instruments.write_instruments(f"instruments_{snap}.hdf5")
+    # Save the instruments
+    instruments.write_instruments(inst_path)

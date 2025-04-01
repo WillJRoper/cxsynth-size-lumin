@@ -37,7 +37,7 @@ def load_galaxies(
 ):
     """Load the galaxies into memory."""
     # If we aren't multithreaded then just load the galaxies
-    if nthreads == 1 or nthreads == 0:
+    if nthreads == 1 or nthreads == 0 or partition.size < nthreads:
         return _get_galaxies(partition, location, snap, cosmo, aperture)
 
     # Otherwise, distribute the read

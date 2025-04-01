@@ -140,7 +140,7 @@ def _get_galaxies(
             gal_ind,
             np.sum(star_mask),
             np.sum(gas_mask),
-            stars_coords.shape,
+            star_coords.shape,
             gas_coords.shape,
         )
 

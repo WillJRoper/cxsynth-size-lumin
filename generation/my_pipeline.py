@@ -266,7 +266,7 @@ if __name__ == "__main__":
 
     # Partition and load the galaxies
     read_start = time.perf_counter()
-    indices, all_stellar_masses = partition_galaxies(
+    indices = partition_galaxies(
         location=path,
         snap=snap,
         lower_mass_lim=lower_mass_lim,

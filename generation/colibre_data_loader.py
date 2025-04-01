@@ -130,7 +130,7 @@ def _get_galaxies(
         star_coords = swift_gal.stars.coordinates.to_physical()
         star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1)
         gas_coords = swift_gal.gas.coordinates.to_physical()
-        gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords)
+        gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1)
 
         # Define masks for the particles within the aperture
         star_mask = star_radii <= aperture

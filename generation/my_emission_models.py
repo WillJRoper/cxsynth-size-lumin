@@ -4,7 +4,6 @@ import numpy as np
 from synthesizer.emission_models import (
     BlackHoleEmissionModel,
     EmissionModel,
-    EscapedEmission,
     GalaxyEmissionModel,
     NebularEmission,
     ReprocessedEmission,

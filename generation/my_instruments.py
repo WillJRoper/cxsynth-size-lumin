@@ -104,13 +104,6 @@ def make_instruments(inst_path, z):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    # What snapshot are we using?
-    parser.add_argument(
-        "--snap-ind",
-        type=int,
-        help="The snapshot to use.",
-    )
-
     # Which simulation?
     parser.add_argument(
         "--run-dir",
@@ -133,23 +126,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run_folder = args.run_dir
-    snap = str(args.snap_ind).zfill(4)
     run_name = args.run_name
     variant = args.variant
 
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
 
-    # Read in the redshift and while we do it make sure we actually have
-    # SOAP data for this snap
-    try:
-        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
-            redshift = hf["Cosmology"].attrs["Redshift"]
-    except FileNotFoundError:
-        print(f"No SOAP data for snapshot {snap}.")
-        exit(0)
+    # Loop over possible snapshots
+    for snap_ind in range(0, 128):
+        snap = str(snap_ind).zfill(4)
 
-    # Define the instrument path
-    inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
+        # Read in the redshift and while we do it make sure we actually have
+        # SOAP data for this snap
+        try:
+            with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+                redshift = hf["Cosmology"].attrs["Redshift"]
+        except FileNotFoundError:
+            print(f"No SOAP data for snapshot {snap}.")
+            exit(0)
 
-    make_instruments(args.inst_path, args.z)
+        print("Generating instruments for snapshot:", snap)
+
+        # Define the instrument path
+        inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
+
+        print(f"Making instruments for snapshot {snap} at redshift {redshift}.")
+
+        make_instruments(inst_path, redshift)

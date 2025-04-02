@@ -1,5 +1,8 @@
 """Script for generating the instrument files for the COLIBRE analysis."""
 
+import argparse
+
+import h5py
 import webbpsf
 from astropy.cosmology import Planck15 as cosmo
 from synthesizer.instruments import FilterCollection
@@ -96,3 +99,57 @@ def make_instruments(inst_path, z):
 
     # Save the instruments
     instruments.write_instruments(inst_path)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    # What snapshot are we using?
+    parser.add_argument(
+        "--snap-ind",
+        type=int,
+        help="The snapshot to use.",
+    )
+
+    # Which simulation?
+    parser.add_argument(
+        "--run-dir",
+        type=str,
+        help="The directory of the simulation.",
+        default="/cosma8/data/dp004/colibre/Runs/",
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        help="The name of the simulation (the directory in run-dir).",
+        default="L025_m7",
+    )
+    parser.add_argument(
+        "--variant",
+        type=str,
+        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
+        default="THERMAL_AGN_m7",
+    )
+    args = parser.parse_args()
+
+    run_folder = args.run_dir
+    snap = str(args.snap_ind).zfill(4)
+    run_name = args.run_name
+    variant = args.variant
+
+    # Define the whole path to the data
+    path = f"{run_folder}/{run_name}/{variant}/"
+
+    # Read in the redshift and while we do it make sure we actually have
+    # SOAP data for this snap
+    try:
+        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+            redshift = hf["Cosmology"].attrs["Redshift"]
+    except FileNotFoundError:
+        print(f"No SOAP data for snapshot {snap}.")
+        exit(0)
+
+    # Define the instrument path
+    inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
+
+    make_instruments(args.inst_path, args.z)

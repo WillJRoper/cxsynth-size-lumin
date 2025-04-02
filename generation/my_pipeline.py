@@ -121,7 +121,7 @@ if __name__ == "__main__":
         help="The directory to save the grid.",
     )
 
-    # What snapshot are we using? (The index of the snapshot in the list)
+    # What snapshot are we using?
     parser.add_argument(
         "--snap-ind",
         type=int,

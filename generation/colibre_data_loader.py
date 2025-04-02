@@ -122,7 +122,7 @@ def _get_galaxies(
 
     # Get centres in physical coordinates
     centre = soap.centre.to_physical().to("Mpc")
-    centre = centre[iteration_order]
+    centre = centre[sgs.iteration_order]
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):

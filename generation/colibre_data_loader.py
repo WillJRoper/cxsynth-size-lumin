@@ -44,6 +44,10 @@ def _set_up_swift_galaxy(
         aexp = hf["Cosmology"].attrs["Scale-factor"]
         redshift = hf["Cosmology"].attrs["Redshift"]
 
+    # If we have an empty chunk, we can't do anything
+    if len(chunk_inds) == 0:
+        return None, None, aexp, redshift
+
     soap = SOAP(
         f"{location}/SOAP/halo_properties_{snap}.hdf5",
         soap_index=chunk_inds,
@@ -110,6 +114,10 @@ def _get_galaxies(
     # How many galaxies are on this chunk?
     ngals = len(chunk_inds)
 
+    # If we have no galaxies, we can't do anything
+    if ngals == 0:
+        return []
+
     # First up, get out I/O helpers and some metadata from SWIFTGalaxy
     soap, sgs, aexp, redshift = _set_up_swift_galaxy(
         location,
@@ -135,7 +143,12 @@ def _get_galaxies(
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")
         gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
-        gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
+        if gas_coords.size > 1:
+            gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
+        elif gas_coords.size == 1:
+            gas_radii = np.array([np.linalg.norm(cent - gas_coords).to("kpc")])
+        else:
+            gas_radii = np.array([])
 
         # Define masks for the particles within the aperture
         star_mask = star_radii <= (aperture * kpc)

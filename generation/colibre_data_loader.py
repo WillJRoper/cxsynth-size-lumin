@@ -6,7 +6,7 @@ import swiftsimio
 from mpi4py import MPI as mpi
 from swiftgalaxy import SOAP, SWIFTGalaxies
 from synthesizer.particle import Galaxy, Gas, Stars
-from unyt import Gyr, Myr, kpc
+from unyt import Gyr, Myr, kpc, unyt_array
 
 
 def partition_galaxies(location, snap, lower_mass_lim, aperture):
@@ -121,14 +121,14 @@ def _get_galaxies(
     gals = np.empty(ngals, dtype=object)
 
     # Get centres in physical coordinates
-    centre = soap.centre.to_physical()
+    centre = soap.centre.to_physical().to("Mpc")
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in zip(sgs.iteration_order, sgs):
         # Derive the radii for star and gas particles
-        star_coords = swift_gal.stars.coordinates.to_physical()
+        star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
         star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1).to("kpc")
-        gas_coords = swift_gal.gas.coordinates.to_physical()
+        gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
         gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1).to("kpc")
 
         # Define masks for the particles within the aperture
@@ -151,7 +151,7 @@ def _get_galaxies(
         # Compute the birth cloud optical depth for young stars from the
         # stellar metallicity. We approximate tau_v_bc = Z / 0.01
         star_metals = swift_gal.stars.metal_mass_fractions
-        young_tau_v = star_metals / 0.01
+        young_tau_v = star_metals.to_value() / 0.01
 
         # Derive the dust masses by summing the different dust species
         # fractions
@@ -166,30 +166,101 @@ def _get_galaxies(
         gas_masses = swift_gal.gas.masses.to("Msun")
         dmasses = dust_mass_fracs * gas_masses
 
+        # Ensure all arrays are contiguous (we need this for the C extension
+        # to not produce garbage)
+        star_ini_masses = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.stars.initial_masses.to("Msun").to_value()[star_mask],
+            ),
+            "Msun",
+        )
+        star_current_masses = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.stars.masses.to("Msun").to_value()[star_mask]
+            ),
+            "Msun",
+        )
+        star_ages = unyt_array(
+            np.ascontiguousarray(ages[star_mask].to_value()),
+            "Myr",
+        )
+        star_metals = unyt_array(
+            np.ascontiguousarray(star_metals[star_mask].to_value()),
+            "dimensionless",
+        )
+        star_coords = unyt_array(
+            np.ascontiguousarray(star_coords.to("Mpc").to_value()[star_mask]),
+            "Mpc",
+        )
+        star_smls = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.stars.smoothing_lengths.to_physical()
+                .to("Mpc")
+                .to_value()[star_mask]
+            ),
+            "Mpc",
+        )
+        young_star_tau_v = unyt_array(
+            np.ascontiguousarray(young_tau_v[star_mask]),
+            "dimensionless",
+        )
+        star_radii = unyt_array(
+            np.ascontiguousarray(star_radii[star_mask].to_value()),
+            "kpc",
+        )
+        gas_masses = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.gas.masses.to("Msun").to_value()[gas_mask],
+            ),
+            "Msun",
+        )
+        gas_dust_masses = unyt_array(
+            np.ascontiguousarray(dmasses.to("Msun").to_value()[gas_mask]),
+            "Msun",
+        )
+        gas_metals = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.gas.metal_mass_fractions.to_value()[gas_mask]
+            ),
+            "dimensionless",
+        )
+        gas_coords = unyt_array(
+            np.ascontiguousarray(gas_coords.to("Mpc").to_value()[gas_mask]),
+            "Mpc",
+        )
+        gas_smls = unyt_array(
+            np.ascontiguousarray(
+                swift_gal.gas.smoothing_lengths.to_physical()
+                .to("Mpc")
+                .to_value()[gas_mask]
+            ),
+            "Mpc",
+        )
+        gas_radii = unyt_array(
+            np.ascontiguousarray(gas_radii.to("Mpc").to_value()[gas_mask]),
+            "Mpc",
+        )
+
         # Create the galaxy object
         gal = Galaxy(
             stars=Stars(
-                initial_masses=swift_gal.stars.initial_masses.to("Msun")[star_mask],
-                current_masses=swift_gal.stars.masses.to("Msun")[star_mask],
-                ages=ages[star_mask],
-                metallicities=star_metals[star_mask],
-                coordinates=star_coords[star_mask],
-                smoothing_lengths=swift_gal.stars.smoothing_lengths.to_physical()[
-                    star_mask
-                ],
-                young_tau_v=young_tau_v[star_mask].to_value(),
-                radii=star_radii[star_mask],
+                initial_masses=star_ini_masses,
+                current_masses=star_current_masses,
+                ages=star_ages,
+                metallicities=star_metals,
+                coordinates=star_coords,
+                smoothing_lengths=star_smls,
+                young_tau_v=young_star_tau_v,
+                radii=star_radii,
                 redshift=redshift,
             ),
             gas=Gas(
-                masses=swift_gal.gas.masses.to("Msun")[gas_mask],
-                metallicities=swift_gal.gas.metal_mass_fractions[gas_mask],
-                coordinates=gas_coords[gas_mask],
-                smoothing_lengths=swift_gal.gas.smoothing_lengths.to_physical()[
-                    gas_mask
-                ],
-                dust_masses=dmasses[gas_mask],
-                radii=gas_radii[gas_mask],
+                masses=gas_masses,
+                metallicities=gas_metals,
+                coordinates=gas_coords,
+                smoothing_lengths=gas_smls,
+                dust_masses=gas_dust_masses,
+                radii=gas_radii,
                 redshift=redshift,
             ),
             redshift=redshift,

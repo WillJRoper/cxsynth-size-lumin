@@ -144,7 +144,7 @@ def _get_galaxies(
         print(
             "Centre from SOAP:",
             centre[gal_ind],
-            "Geometric Mean Centre"
+            "Geometric Mean Centre",
             cent,
         )
 

@@ -142,6 +142,8 @@ def _get_galaxies(
             centre[gal_ind],
             star_coords.min(axis=0),
             star_coords.max(axis=0),
+            aperture,
+            star_radii.min(),
         )
         print(
             "Ngas:",
@@ -149,6 +151,7 @@ def _get_galaxies(
             centre[gal_ind],
             gas_coords.min(axis=0),
             gas_coords.max(axis=0),
+            gas_radii.min(),
         )
 
         # Derive the ages from the scale_factors

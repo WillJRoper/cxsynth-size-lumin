@@ -140,7 +140,7 @@ if __name__ == "__main__":
         # SOAP data for this snap
         try:
             with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
-                redshift = hf["Cosmology"].attrs["Redshift"]
+                redshift = hf["Cosmology"].attrs["Redshift"][0]
         except FileNotFoundError:
             print(f"No SOAP data for snapshot {snap}.")
             continue

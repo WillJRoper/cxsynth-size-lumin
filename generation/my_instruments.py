@@ -143,7 +143,6 @@ if __name__ == "__main__":
                 redshift = hf["Cosmology"].attrs["Redshift"]
         except FileNotFoundError:
             print(f"No SOAP data for snapshot {snap}.")
-            exit(0)
 
         print("Generating instruments for snapshot:", snap)
 

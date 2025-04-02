@@ -141,13 +141,6 @@ def _get_galaxies(
         star_mask = star_radii <= (aperture * kpc)
         gas_mask = gas_radii <= (aperture * kpc)
 
-        print(
-            "Centre from SOAP:",
-            centre[gal_ind],
-            "Geometric Mean Centre",
-            cent,
-        )
-
         # Derive the ages from the scale_factors
         scale_factors = swift_gal.stars.birth_scale_factors.to_value()
         scale_factors[scale_factors > aexp] = aexp

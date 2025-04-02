@@ -142,22 +142,10 @@ def _get_galaxies(
         gas_mask = gas_radii <= (aperture * kpc)
 
         print(
-            "Nstars:",
-            np.sum(star_mask),
+            "Centre from SOAP:",
             centre[gal_ind],
+            "Geometric Mean Centre"
             cent,
-            star_coords.min(axis=0),
-            star_coords.max(axis=0),
-            aperture,
-            star_radii.min(),
-        )
-        print(
-            "Ngas:",
-            np.sum(gas_mask),
-            centre[gal_ind],
-            gas_coords.min(axis=0),
-            gas_coords.max(axis=0),
-            gas_radii.min(),
         )
 
         # Derive the ages from the scale_factors

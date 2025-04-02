@@ -122,9 +122,10 @@ def _get_galaxies(
 
     # Get centres in physical coordinates
     centre = soap.centre.to_physical().to("Mpc")
+    centre = centre[iteration_order]
 
     # swiftgalaxy picks its own efficient iteration order
-    for gal_ind, swift_gal in zip(sgs.iteration_order, sgs):
+    for gal_ind, swift_gal in enumerate(sgs):
         # Derive the radii for star and gas particles
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
         star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1).to("kpc")

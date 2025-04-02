@@ -288,6 +288,10 @@ if __name__ == "__main__":
 
     # Do we have any galaxies anywhere? If not, we can't do anything
     n_gals_all = comm.allreduce(len(galaxies), op=mpi.SUM)
+    n_gals_per_rank = comm.gather(len(galaxies), root=0)
+    if rank == 0:
+        print(f"Total galaxies: {n_gals_all}")
+        print(f"Galaxies per rank: {n_gals_per_rank}")
     if n_gals_all == 0:
         print("No galaxies found.")
         comm.Abort()

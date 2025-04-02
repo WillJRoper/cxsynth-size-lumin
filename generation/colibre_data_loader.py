@@ -177,73 +177,103 @@ def _get_galaxies(
         star_ini_masses = unyt_array(
             np.ascontiguousarray(
                 swift_gal.stars.initial_masses.to("Msun").to_value()[star_mask],
+                dtype=np.float64,
             ),
             "Msun",
         )
         star_current_masses = unyt_array(
             np.ascontiguousarray(
-                swift_gal.stars.masses.to("Msun").to_value()[star_mask]
+                swift_gal.stars.masses.to("Msun").to_value()[star_mask],
+                dtype=np.float64,
             ),
             "Msun",
         )
         star_ages = unyt_array(
-            np.ascontiguousarray(ages[star_mask].to_value()),
+            np.ascontiguousarray(
+                ages[star_mask].to_value(),
+                dtype=np.float64,
+            ),
             "Myr",
         )
         star_metals = unyt_array(
-            np.ascontiguousarray(star_metals[star_mask].to_value()),
+            np.ascontiguousarray(
+                star_metals[star_mask].to_value(),
+                dtype=np.float64,
+            ),
             "dimensionless",
         )
         star_coords = unyt_array(
-            np.ascontiguousarray(star_coords.to("Mpc").to_value()[star_mask]),
+            np.ascontiguousarray(
+                star_coords.to("Mpc").to_value()[star_mask],
+                dtype=np.float64,
+            ),
             "Mpc",
         )
         star_smls = unyt_array(
             np.ascontiguousarray(
                 swift_gal.stars.smoothing_lengths.to_physical()
                 .to("Mpc")
-                .to_value()[star_mask]
+                .to_value()[star_mask],
+                dtype=np.float64,
             ),
             "Mpc",
         )
         young_star_tau_v = unyt_array(
-            np.ascontiguousarray(young_tau_v[star_mask]),
+            np.ascontiguousarray(
+                young_tau_v[star_mask],
+                dtype=np.float64,
+            ),
             "dimensionless",
         )
         star_radii = unyt_array(
-            np.ascontiguousarray(star_radii[star_mask].to_value()),
+            np.ascontiguousarray(
+                star_radii[star_mask].to_value(),
+                dtype=np.float64,
+            ),
             "kpc",
         )
         gas_masses = unyt_array(
             np.ascontiguousarray(
                 swift_gal.gas.masses.to("Msun").to_value()[gas_mask],
+                dtype=np.float64,
             ),
             "Msun",
         )
         gas_dust_masses = unyt_array(
-            np.ascontiguousarray(dmasses.to("Msun").to_value()[gas_mask]),
+            np.ascontiguousarray(
+                dmasses.to("Msun").to_value()[gas_mask],
+                dtype=np.float64,
+            ),
             "Msun",
         )
         gas_metals = unyt_array(
             np.ascontiguousarray(
-                swift_gal.gas.metal_mass_fractions.to_value()[gas_mask]
+                swift_gal.gas.metal_mass_fractions.to_value()[gas_mask],
+                dtype=np.float64,
             ),
             "dimensionless",
         )
         gas_coords = unyt_array(
-            np.ascontiguousarray(gas_coords.to("Mpc").to_value()[gas_mask]),
+            np.ascontiguousarray(
+                gas_coords.to("Mpc").to_value()[gas_mask],
+                dtype=np.float64,
+            ),
             "Mpc",
         )
         gas_smls = unyt_array(
             np.ascontiguousarray(
                 swift_gal.gas.smoothing_lengths.to_physical()
                 .to("Mpc")
-                .to_value()[gas_mask]
+                .to_value()[gas_mask],
+                dtype=np.float64,
             ),
             "Mpc",
         )
         gas_radii = unyt_array(
-            np.ascontiguousarray(gas_radii.to("Mpc").to_value()[gas_mask]),
+            np.ascontiguousarray(
+                gas_radii.to("Mpc").to_value()[gas_mask],
+                dtype=np.float64,
+            ),
             "Mpc",
         )
 

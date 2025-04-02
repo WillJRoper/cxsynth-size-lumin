@@ -313,7 +313,7 @@ if __name__ == "__main__":
     #         ),
     #         f"Gas/DustMassRadii/{frac_key}",
     #     )
-    pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
+    # pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
     pipeline.add_analysis_func(
         lambda gal: get_pixel_based_hlr(gal.stars),
         "Stars/PixelHalfLightRadii",

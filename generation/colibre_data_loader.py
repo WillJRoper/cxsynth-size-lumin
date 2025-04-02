@@ -126,11 +126,16 @@ def _get_galaxies(
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):
+        # Get the centre
+        cent = np.mean(
+            swift_gal.stars.coordinates.to_physical().to("Mpc"),
+            axis=0,
+        )
         # Derive the radii for star and gas particles
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
-        star_radii = np.linalg.norm(centre[gal_ind] - star_coords, axis=1).to("kpc")
+        star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")
         gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
-        gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1).to("kpc")
+        gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
 
         # Define masks for the particles within the aperture
         star_mask = star_radii <= (aperture * kpc)
@@ -140,6 +145,7 @@ def _get_galaxies(
             "Nstars:",
             np.sum(star_mask),
             centre[gal_ind],
+            cent,
             star_coords.min(axis=0),
             star_coords.max(axis=0),
             aperture,
@@ -283,7 +289,7 @@ def _get_galaxies(
                 redshift=redshift,
             ),
             redshift=redshift,
-            centre=centre[gal_ind],
+            centre=cent,
         )
 
         gals[gal_ind] = gal

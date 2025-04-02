@@ -28,6 +28,10 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
     # Sanitise away galaxies below the threshold
     gal_inds = gal_inds[nstars >= 100]
 
+    # If we have no galaxies, we can't do anything
+    if len(gal_inds) == 0:
+        return []
+
     # Split the galaxies between the processes
     indices = np.array_split(gal_inds, nranks)
 

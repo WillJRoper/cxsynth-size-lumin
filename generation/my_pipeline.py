@@ -276,18 +276,21 @@ if __name__ == "__main__":
         lower_mass_lim=lower_mass_lim,
         aperture=aperture,
     )
-    if len(indices) > 0:
-        galaxies = load_galaxies(
-            indices,
-            location=path,
-            snap=snap,
-            cosmo=cosmo,
-            aperture=aperture,
-            nthreads=nthreads,
-        )
-    else:
-        galaxies = []
+    galaxies = load_galaxies(
+        indices,
+        location=path,
+        snap=snap,
+        cosmo=cosmo,
+        aperture=aperture,
+        nthreads=nthreads,
+    )
     print(f"Reading took {time.perf_counter() - read_start:.2f} seconds.")
+
+    # Do we have any galaxies anywhere? If not, we can't do anything
+    n_gals_all = comm.allreduce(len(galaxies), op=mpi.SUM)
+    if n_gals_all == 0:
+        print("No galaxies found.")
+        comm.Abort()
 
     # Set up the pipeline
     pipeline = Pipeline(

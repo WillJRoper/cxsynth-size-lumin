@@ -38,7 +38,7 @@ def load_galaxies(
 ):
     """Load the galaxies into memory."""
     # If we have no galaxies exit, we'll deal with it later
-    if len(partition) == 0:
+    if len(partition) < 2:
         return []
 
     # If we aren't multithreaded then just load the galaxies

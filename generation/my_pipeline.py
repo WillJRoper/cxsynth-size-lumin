@@ -37,6 +37,10 @@ def load_galaxies(
     nthreads=1,
 ):
     """Load the galaxies into memory."""
+    # If we have no galaxies exit, we'll deal with it later
+    if len(partition) == 0:
+        return []
+
     # If we aren't multithreaded then just load the galaxies
     if nthreads == 1 or nthreads == 0 or partition.size < nthreads:
         galaxies = _get_galaxies(partition, location, snap, cosmo, aperture)
@@ -268,7 +272,7 @@ if __name__ == "__main__":
     # Can't move on until we have the instruments file made
     comm.Barrier()
 
-    # Partition and load the galaxies
+    # Partition the galaxies
     read_start = time.perf_counter()
     indices = partition_galaxies(
         location=path,
@@ -276,6 +280,18 @@ if __name__ == "__main__":
         lower_mass_lim=lower_mass_lim,
         aperture=aperture,
     )
+
+    # Do we have any galaxies anywhere? If not, we can't do anything
+    n_gals_all = comm.allreduce(len(indices), op=mpi.SUM)
+    n_gals_per_rank = comm.gather(len(indices), root=0)
+    if rank == 0:
+        print(f"Total galaxies: {n_gals_all}")
+        print(f"Galaxies per rank: {n_gals_per_rank}")
+    if n_gals_all == 0:
+        print("No galaxies found.")
+        comm.Abort()
+
+    # Load the galaxies
     galaxies = load_galaxies(
         indices,
         location=path,
@@ -285,16 +301,6 @@ if __name__ == "__main__":
         nthreads=nthreads,
     )
     print(f"Reading took {time.perf_counter() - read_start:.2f} seconds.")
-
-    # Do we have any galaxies anywhere? If not, we can't do anything
-    n_gals_all = comm.allreduce(len(galaxies), op=mpi.SUM)
-    n_gals_per_rank = comm.gather(len(galaxies), root=0)
-    if rank == 0:
-        print(f"Total galaxies: {n_gals_all}")
-        print(f"Galaxies per rank: {n_gals_per_rank}")
-    if n_gals_all == 0:
-        print("No galaxies found.")
-        comm.Abort()
 
     # Set up the pipeline
     pipeline = Pipeline(

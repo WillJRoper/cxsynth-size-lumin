@@ -133,8 +133,11 @@ def _get_galaxies(
         gas_radii = np.linalg.norm(centre[gal_ind] - gas_coords, axis=1).to("kpc")
 
         # Define masks for the particles within the aperture
-        star_mask = star_radii <= aperture * kpc
-        gas_mask = gas_radii <= aperture * kpc
+        star_mask = star_radii <= (aperture * kpc)
+        gas_mask = gas_radii <= (aperture * kpc)
+
+        print("Nstars:", np.sum(star_mask))
+        print("Ngas:", np.sum(gas_mask))
 
         # Derive the ages from the scale_factors
         scale_factors = swift_gal.stars.birth_scale_factors.to_value()

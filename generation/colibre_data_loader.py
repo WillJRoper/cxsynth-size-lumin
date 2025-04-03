@@ -152,9 +152,11 @@ def _get_galaxies(
         if gas_coords.size > 1:
             gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
         elif gas_coords.size == 1:
-            gas_radii = np.array([np.linalg.norm(cent - gas_coords).to("kpc")])
+            gas_radii = unyt_array(
+                np.array([np.linalg.norm(cent - gas_coords).to("kpc").value]), "kpc"
+            )
         else:
-            gas_radii = np.array([])
+            gas_radii = unyt_array(np.array([]), "kpc")
 
         # Define masks for the particles within the aperture
         star_mask = star_radii <= (aperture * kpc)

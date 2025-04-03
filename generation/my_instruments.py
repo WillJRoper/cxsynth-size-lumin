@@ -3,7 +3,6 @@
 import argparse
 
 import h5py
-import swiftsimio
 import webbpsf
 from astropy.cosmology import Planck15 as cosmo
 from synthesizer.instruments import FilterCollection
@@ -154,11 +153,10 @@ if __name__ == "__main__":
             continue
 
         # Check that we have the aperture
-        cat = swiftsimio.load(f"{path}/SOAP/halo_properties_{snap}.hdf5")
-        if not hasattr(cat, f"exclusive_sphere_{aperture}kpc"):
-            continue
-
-        print("Generating instruments for snapshot:", snap)
+        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+            if f"{aperture}kpc" not in hf["ExclusiveSphere"]:
+                print(f"No {aperture}kpc aperture for snapshot {snap}.")
+                continue
 
         # Define the instrument path
         inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"

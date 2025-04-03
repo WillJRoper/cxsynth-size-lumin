@@ -18,9 +18,6 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
     # Load the SWIFT galaxy catalogue
     cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
 
-    # Ensure we have the data for the requested aperture
-        return []
-
     # Get the number of star particles in the exclusive sphere
     nstars = getattr(
         getattr(cat, f"exclusive_sphere_{int(aperture)}kpc"),

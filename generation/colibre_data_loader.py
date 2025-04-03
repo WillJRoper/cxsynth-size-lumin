@@ -15,8 +15,13 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
     nranks = mpi.COMM_WORLD.Get_size()
     this_rank = mpi.COMM_WORLD.Get_rank()
 
-    # Read in the masses so we can make a cut based on the stellar mass
+    # Load the SWIFT galaxy catalogue
     cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
+
+    # Ensure we have the data for the requested aperture
+        return []
+
+    # Get the number of star particles in the exclusive sphere
     nstars = getattr(
         getattr(cat, f"exclusive_sphere_{int(aperture)}kpc"),
         "number_of_star_particles",

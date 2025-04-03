@@ -13,7 +13,6 @@ from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
 from my_emission_models import LOSStellarEmission
-from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
@@ -257,14 +256,12 @@ if __name__ == "__main__":
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
 
-    # Make the instrument collection for this redshift if it doesn't exist
-    if rank == 0 and not os.path.exists(inst_path):
-        # Try, if we fail everyone needs to error not just rank 0
-        try:
-            make_instruments(inst_path, redshift)
-        except Exception as e:
-            print(e)
-            comm.Abort()
+    # Make sure we have the instrument collection
+    if not os.path.exists(inst_path):
+        raise FileNotFoundError(
+            f"Instrument collection not found at {inst_path}."
+            " Please run the instrument generation script first."
+        )
 
     # Can't move on until we have the instruments file made
     comm.Barrier()

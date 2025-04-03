@@ -3,6 +3,7 @@
 import argparse
 
 import h5py
+import swiftsimio
 import webbpsf
 from astropy.cosmology import Planck15 as cosmo
 from synthesizer.instruments import FilterCollection
@@ -123,11 +124,18 @@ if __name__ == "__main__":
         help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
         default="THERMAL_AGN_m7",
     )
+    parser.add_argument(
+        "--aperture",
+        type=int,
+        help="The aperture to use for the observations.",
+        default=100,
+    )
     args = parser.parse_args()
 
     run_folder = args.run_dir
     run_name = args.run_name
     variant = args.variant
+    aperture = args.aperture
 
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
@@ -143,6 +151,11 @@ if __name__ == "__main__":
                 redshift = hf["Cosmology"].attrs["Redshift"][0]
         except FileNotFoundError:
             print(f"No SOAP data for snapshot {snap}.")
+            continue
+
+        # Check that we have the aperture
+        cat = swiftsimio.load(f"{path}/SOAP/halo_properties_{snap}.hdf5")
+        if not hasattr(cat, f"exclusive_sphere_{aperture}kpc"):
             continue
 
         print("Generating instruments for snapshot:", snap)

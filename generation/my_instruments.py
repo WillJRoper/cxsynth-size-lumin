@@ -1,6 +1,7 @@
 """Script for generating the instrument files for the COLIBRE analysis."""
 
 import argparse
+import os
 
 import h5py
 import webbpsf
@@ -138,6 +139,10 @@ if __name__ == "__main__":
 
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists(f"../data/{run_name}/{variant}"):
+        os.makedirs(f"../data/{run_name}/{variant}")
 
     # Loop over possible snapshots
     for snap_ind in range(0, 128):

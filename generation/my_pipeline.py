@@ -13,7 +13,6 @@ from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
 from my_emission_models import LOSStellarEmission
-from my_extra_analysis import get_pixel_based_hlr
 from my_instruments import make_instruments
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
@@ -200,8 +199,6 @@ if __name__ == "__main__":
 
     # Some metadata we'll use
     aperture = args.aperture
-    sel_dist = 0.1  # in Mpc
-    norm = np.linalg.norm
 
     # Read in the redshift and while we do it make sure we actually have
     # SOAP data for this snap
@@ -335,10 +332,10 @@ if __name__ == "__main__":
     #         f"Gas/DustMassRadii/{frac_key}",
     #     )
     # pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
-    pipeline.add_analysis_func(
-        lambda gal: get_pixel_based_hlr(gal.stars),
-        "Stars/PixelHalfLightRadii",
-    )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_pixel_based_hlr(gal.stars),
+    #     "Stars/PixelHalfLightRadii",
+    # )
     pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
     # pipeline.add_analysis_func(
     #     lambda gal: gal.stars.get_mass_weighted_optical_depth(),

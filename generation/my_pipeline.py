@@ -349,7 +349,14 @@ if __name__ == "__main__":
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
     # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
-    pipeline.get_images_flux_psfs(fov=61 * kpc, kernel=kernel_data)
+    pipeline.get_images_flux_psfs(
+        fov=61 * kpc,
+        kernel=kernel_data,
+        spectra_type=(
+            "reprocessed",
+            "stellar_total",
+        ),
+    )
 
     # Run the pipeline
     pipeline.run()

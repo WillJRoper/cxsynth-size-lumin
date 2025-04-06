@@ -357,6 +357,7 @@ if __name__ == "__main__":
             "reprocessed",
             "stellar_total",
         ),
+        write=False,
     )
 
     # Run the pipeline

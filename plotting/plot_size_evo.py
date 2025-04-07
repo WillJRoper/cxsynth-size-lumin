@@ -56,10 +56,10 @@ def plot_size_evolution(filepath):
 
     # Compute the median in each redshift bin and the standard deviation in
     # each bin so we can plot the error bars
-    median_xs = np.logspace(
-        np.log10(np.min(redshifts)),
-        np.log10(np.max(redshifts)),
-        15,
+    median_xs = np.arange(
+        -0.5,
+        np.max(redshifts) + 0.5,  # We want to include the last bin
+        1.0,
     )
     median_ys = binned_statistic(
         redshifts,

@@ -175,7 +175,7 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
             "B": ["NIRCam.F115W", "NIRCam.F150W"],
         }
     )
-    fig, ax = img_coll.plot_rgb_image(
+    fig, ax, _ = img_coll.plot_rgb_image(
         show=False,
         vmin=vmin,
         vmax=vmax,

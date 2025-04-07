@@ -34,6 +34,10 @@ def partition_galaxies(location, snap, part_limit, aperture):
     if len(gal_inds) == 0:
         return []
 
+    # If we have only one rank, we can just return all the galaxies
+    if nranks == 1:
+        return np.array(gal_inds, dtype=int)
+
     # Now divide the galaxies between processes keeping the galaxies in
     # contiguous chunks but balancing the number of stars on each process
     stars_per_rank = np.zeros(nranks, dtype=int)

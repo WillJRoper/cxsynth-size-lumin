@@ -38,7 +38,7 @@ def plot_size_evolution(filepath):
         # Open the file and extract the sizes and redshifts
         with h5py.File(f, "r") as hdf:
             # Get the redshift (it's the same for all galaxies)
-            redshift = hdf["Galaxies/Redshift"][0]
+            redshift = hdf["Galaxies/Redshift"]
             sizes.extend(hdf["Galaxies/Stars/MassRadii/0p5"][...])
             redshifts.extend(redshift)
 

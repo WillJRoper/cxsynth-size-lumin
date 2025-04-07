@@ -26,7 +26,11 @@ def plot_size_flux_hex(filepath, filter, outpath):
     # Create the plot
     fig = plt.figure(figsize=(3.5, 3.5))
     ax = fig.add_subplot(111)
-    ax.loglog()
+
+    # Remove galaxies with no flux
+    mask = flux > 0
+    flux = flux[mask]
+    sizes = sizes[mask]
 
     # Plot the hexbin
     im = ax.hexbin(

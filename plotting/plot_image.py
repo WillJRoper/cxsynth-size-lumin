@@ -43,7 +43,7 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
             )
 
         # Get the redshift of this galaxy
-        redshift = hdf["Galaxies/Redshift"][gal_ind]
+        redshift = hdf["Galaxies/Redshift"][gal_ind][0]
 
     # Create the image collection
     img_coll = ImageCollection(
@@ -62,6 +62,10 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     print(f"Max value: {vmax}")
     print(f"Min value: {vmin}")
     print(f"Redshift: {redshift}/Snap: {snap}")
+    print(
+        f"Making Galaxe {gal_ind} from"
+        f" {run_name}/{variant} at z={redshift:.2f} (snap {snap})",
+    )
 
     # Plot the images
     fig, ax = img_coll.plot_images(

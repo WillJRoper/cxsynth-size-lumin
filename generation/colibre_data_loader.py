@@ -43,7 +43,7 @@ def partition_galaxies(location, snap, part_limit, aperture):
     stars_per_rank = np.zeros(nranks, dtype=int)
     galaxies_on_rank = np.zeros(nranks, dtype=object)
     target_stars = np.sum(nstars[gal_inds]) // nranks
-    for i in range(len(gal_inds)):
+    for i in range(nranks):
         galaxies_on_rank[i] = []
     igal = 0
     current_rank = 0
@@ -51,7 +51,7 @@ def partition_galaxies(location, snap, part_limit, aperture):
         this_gal_ind = gal_inds[igal]
         if stars_per_rank[current_rank] + nstars[this_gal_ind] > target_stars:
             current_rank += 1
-            if current_rank >= nranks:
+            if current_rank > nranks - 1:
                 current_rank = nranks - 1
         stars_per_rank[current_rank] += nstars[this_gal_ind]
         galaxies_on_rank[current_rank].append(this_gal_ind)

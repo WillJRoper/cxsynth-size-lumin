@@ -5,10 +5,38 @@ import os
 
 import h5py
 import webbpsf
-from astropy.cosmology import Planck15 as cosmo
+from astropy.cosmology import Planck18 as cosmo
 from synthesizer.instruments import FilterCollection
 from synthesizer.instruments.instrument import Instrument
-from unyt import angstrom, arcsecond, kpc
+from unyt import Mpc, angstrom, arcsecond, kpc
+
+
+def angular_to_physical(angular_res_arcsec, distance):
+    """
+    Convert angular resolution in arcseconds to physical resolution in kpc.
+
+    This is to be used for fixed distance observations.
+
+    Args:
+        angular_res_arcsec (float): The angular resolution in arcseconds.
+        distance (float): The distance to the object in kiloparsecs.
+
+    Returns:
+        physical_resolution_kpc (float): The physical resolution in kiloparsecs.
+    """
+    # Convert angular resolution from arcseconds to radians
+    # unyt provides unit conversion:
+    angular_res = angular_res_arcsec
+    angular_res_rad = angular_res.to("radian")
+
+    # Apply the small-angle formula:
+    # physical resolution = distance * angular resolution (in radians)
+    physical_resolution = distance * angular_res_rad
+
+    # Convert the result to kiloparsecs:
+    physical_resolution_kpc = physical_resolution.to("kpc")
+
+    return physical_resolution_kpc
 
 
 def make_filters(filt_path):
@@ -110,23 +138,40 @@ def make_instruments(inst_path, filt_path, z, nircam_psfs, miri_psfs):
     nircam_res = 0.031 * arcsecond
     miri_res = 0.111 * arcsecond
 
-    # Convert the angular resolutions to physical kpc
+    # Convert the angular resolutions to physical kpc.
+    # NOTE: When the luminosity distance is less than 10 Mpc we just take the
+    # resolution at 10 Mpc.
     arcsec_to_kpc = (
         cosmo.kpc_proper_per_arcmin(z).to("kpc/arcsec").value * kpc / arcsecond
     )
+
+    # Get the luminosity distance
+    d_lum = cosmo.luminosity_distance(z).to("Mpc").value
+    if d_lum >= 10:
+        nircam_res_spatial = arcsec_to_kpc * nircam_res
+        miri_res_spatial = arcsec_to_kpc * miri_res
+    else:
+        nircam_res_spatial = angular_to_physical(
+            angular_res_arcsec=nircam_res,
+            distance=10 * Mpc,
+        )
+        miri_res_spatial = angular_to_physical(
+            angular_res_arcsec=miri_res,
+            distance=10 * Mpc,
+        )
 
     # Set up the instruments
     nircam = Instrument(
         "JWST.NIRCam",
         filters=nircam_fs,
         psfs=nircam_psfs,
-        resolution=arcsec_to_kpc * nircam_res,
+        resolution=nircam_res_spatial,
     )
     miri = Instrument(
         "JWST.MIRI",
         filters=miri_fs,
         psfs=miri_psfs,
-        resolution=arcsec_to_kpc * miri_res,
+        resolution=miri_res_spatial,
     )
     uv = Instrument(
         "UV1500",

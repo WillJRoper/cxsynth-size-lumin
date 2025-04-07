@@ -43,7 +43,7 @@ TMPFILE=$(mktemp /tmp/submit_job.XXXXXX.sh)
 cat >"$TMPFILE" <<EOF
 #!/bin/bash -l
 #SBATCH --ntasks=8
-#SBATCH -J SynthXCOLIBRE_${RUN_NAME}_${VARIANT}
+#SBATCH -J SynthXCOLIBRE_${RUN_NAME}/${VARIANT}
 #SBATCH --output=../logs/survey_log_%A_%a_${RUN_NAME}_${VARIANT}.txt
 #SBATCH -p ${PARTITION}
 #SBATCH -A dp004

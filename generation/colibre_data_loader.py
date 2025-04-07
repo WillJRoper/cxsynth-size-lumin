@@ -81,7 +81,7 @@ def _set_up_swift_galaxy(
         f"{location}/SOAP/colibre_with_SOAP_membership_{snap}.hdf5",
         soap,
         preload=preload,
-        auto_recentre=True,
+        auto_recentre=False,
     )
 
     return soap, sgs, aexp, redshift
@@ -136,7 +136,6 @@ def _get_galaxies(
 
     # Get centres in physical coordinates
     centre = soap.centre.to_physical().to("Mpc")
-    centre = centre[sgs.iteration_order]
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):

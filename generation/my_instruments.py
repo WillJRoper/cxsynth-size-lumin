@@ -99,10 +99,10 @@ def make_psfs(filt_path):
         nircam_psfs = {}
         miri_psfs = {}
         with h5py.File(filt_path + "/instrument_psfs.hdf5", "r") as hf:
-            for key in hf["NIRCam"].keys():
-                nircam_psfs[key] = hf["NIRCam"][key][...]
-            for key in hf["MIRI"].keys():
-                miri_psfs[key] = hf["MIRI"][key][...]
+            for key in hf["NIRCam/JWST"].keys():
+                nircam_psfs[f"JWST/{key}"] = hf["NIRCam/JWST"][key][...]
+            for key in hf["MIRI/JWST"].keys():
+                miri_psfs[f"JWST/{key}"] = hf["MIRI/JWST"][key][...]
 
         return nircam_psfs, miri_psfs
 

@@ -146,6 +146,12 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
         imgs=img_dict,
     )
 
+    # Correct the shape
+    img_coll.npix = (
+        img_coll.imgs["NIRCam.F200W"].arr.shape[0],
+        img_coll.imgs["NIRCam.F200W"].arr.shape[1],
+    )
+
     # Compute the 99.9 percentile of each image and take the maximum as
     # the normalization factor
     vmax = np.max(

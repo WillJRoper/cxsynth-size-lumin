@@ -1,0 +1,109 @@
+"""A script for plotting galaxy images in different filters."""
+
+import argparse
+import os
+
+import h5py
+import matplotlib.pyplot as plt
+import numpy as np
+from synthesizer.imaging import ImageCollection
+from unyt import kpc
+
+
+def plot_each_filter(path, outpath, gal_ind=None):
+    """
+    Plot the images of a galaxy in different filters.
+
+    Args:
+        path (str): The path to the HDF5 file.
+        outpath (str): The path to save the output images.
+        gal_ind (int, optional): The index of the galaxy to plot. If None,
+            the brightest galaxy is used.
+    """
+    # Define the keys we'll need
+    img_key = "Galaxies/Stars/PSFImages/Flux/stellar_total/JWST"
+    phot_key = "Galaxies/Stars/Photometry/Fluxes/stellar_total/JWST/NIRCam.F200W"
+
+    # Create a dict to hold each image
+    img_dict = {}
+
+    # Open the HDF5 file
+    with h5py.File(path, "r") as hdf:
+        # If the gal_ind is None we just want to find the brightest galaxy
+        # and plot its image in each filter
+        if gal_ind is None:
+            gal_ind = np.argmax(hdf[phot_key][:])
+
+        # Read each image for this galaxy into the dictionary
+        for key in hdf[img_key].keys():
+            img_dict[key] = hdf[img_key][key][gal_ind, :, :]
+
+    # Create the image collection
+    img_coll = ImageCollection(
+        resolution=1 * kpc,
+        fov=100 * kpc,
+        imgs=img_dict,
+    )
+
+    # Compute the 99.9 percentile of each image and take the maximum as
+    # the normalization factor
+    vmax = np.max(
+        [np.percentile(img_coll.imgs[key], 99.9) for key in img_dict.keys()],
+    )
+    vmin = 0.0
+
+    # Plot the images
+    fig, ax = img_coll.plot_imgs(
+        show=False,
+        vmin=vmin,
+        vmax=vmax,
+    )
+
+    fig.savefig(
+        outpath + f"cutout_{gal_ind}.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+
+    # Close the figure
+    plt.close(fig)
+
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description="Plot galaxy images in different filters."
+    )
+    parser.add_argument(
+        "--run-name",
+        type=str,
+        help="The name of the simulation (the directory in run-dir).",
+        default="L025_m7",
+    )
+    parser.add_argument(
+        "--variant",
+        type=str,
+        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
+        default="THERMAL_AGN_m7",
+    )
+    parser.add_argument(
+        "--gal-ind",
+        type=int,
+        help="The index of the galaxy to plot.",
+        default=None,
+    )
+
+    args = parser.parse_args()
+
+    # Define input and output paths
+    run_name = args.run_name
+    variant = args.variant
+    path = f"../data/{run_name}/{variant}/"
+    outpath = f"../plots/{run_name}/{variant}/images/"
+
+    # Create the plot directory if it doesn't exist
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    # Call the function to plot the images
+    plot_each_filter(path, outpath)

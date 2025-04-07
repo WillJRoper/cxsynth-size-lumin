@@ -81,7 +81,7 @@ def _set_up_swift_galaxy(
         f"{location}/SOAP/colibre_with_SOAP_membership_{snap}.hdf5",
         soap,
         preload=preload,
-        auto_recentre=False,
+        auto_recentre=True,
     )
 
     return soap, sgs, aexp, redshift

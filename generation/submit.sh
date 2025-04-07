@@ -48,8 +48,7 @@ done
 # Create a temporary file for the SBATCH submission script
 TMPFILE=$(mktemp /tmp/submit_job.XXXXXX.sh)
 
-# Write the SBATCH script to the temporary file.
-# Note that we use variable expansion (via <<EOF) for parameters that need to be injected.
+# Write the SBATCH script header with variable expansion.
 cat >"$TMPFILE" <<EOF
 #!/bin/bash -l
 #SBATCH --ntasks=${NTASKS}
@@ -67,7 +66,6 @@ module load gnu_comp/11.1.0 openmpi
 
 # Calculate snap based on task ID
 snap=\$((SLURM_ARRAY_TASK_ID))
-
 EOF
 
 # If a part limit was provided, add it as a variable assignment in the submission script.
@@ -78,23 +76,25 @@ else
 fi
 
 # Append the main execution block.
-# Use a here-doc with no variable expansion to keep the embedded commands intact.
-cat >>"$TMPFILE" <<'EOF'
+# We use a here-document with unquoted EOF so that wrapper variables are expanded,
+# but we escape the SLURM variables so they remain literal in the SBATCH script.
+cat >>"$TMPFILE" <<EOF
+
 # Execute the pipeline with mpirun.
-mpirun -np $SLURM_NTASKS python my_pipeline.py \
-    --grid test_grid.hdf5 \
-    --grid-dir /snap8/scratch/dp004/dc-rope1/flares_test \
-    --snap $snap \
-    --nthreads $SLURM_CPUS_PER_TASK \
-    --run-name ${RUN_NAME} \
-    --variant ${VARIANT} $PART_LIMIT
+mpirun -np \$SLURM_NTASKS python my_pipeline.py \\
+    --grid test_grid.hdf5 \\
+    --grid-dir /snap8/scratch/dp004/dc-rope1/flares_test \\
+    --snap \$snap \\
+    --nthreads \$SLURM_CPUS_PER_TASK \\
+    --run-name ${RUN_NAME} \\
+    --variant ${VARIANT} \$PART_LIMIT
 
 echo "Job done, info follows..."
-sacct -j $SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,MaxVMSize,Elapsed,ExitCode
+sacct -j \$SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,MaxVMSize,Elapsed,ExitCode
 EOF
 
 # Optionally, display the temporary script for debugging
-#cat "$TMPFILE"
+# cat "$TMPFILE"
 
 # Submit the job using sbatch
 sbatch "$TMPFILE"

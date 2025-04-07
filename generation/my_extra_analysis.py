@@ -64,7 +64,7 @@ def get_pixel_based_hlr(obj):
     """
     results = {}
 
-    # Loop over instruments
+    # Loop over PSFed images
     for inst_name, d in obj.images_psf_fnu.items():
         # Loop over spectrum types
         for spec_type, imgs in d.items():
@@ -91,7 +91,38 @@ def get_pixel_based_hlr(obj):
                 hlr = np.sqrt(hlr_area / np.pi)
 
                 # Store the results
-                results.setdefault(spec_type, {})[filt] = (
+                results.setdefault(f"Flux/{spec_type}", {})[filt] = (
+                    hlr * img.resolution.units
+                ).to("kpc")
+
+    # Also do the Rest frame luminosity
+    for inst_name, d in obj.images_lnu.items():
+        # Loop over spectrum types
+        for spec_type, imgs in d.items():
+            # Loop over filters
+            for filt, img in imgs.items():
+                # Get the image
+                img = obj.images_lnu[inst_name][spec_type][filt]
+                img_arr = img.arr
+                pix_area = img._resolution * img._resolution
+
+                # Sort pixel values from brightest to faintest
+                pixels = np.sort(img_arr.flatten())[::-1]
+
+                # Calculate the cumulative sum of the pixels
+                cumsum = np.cumsum(pixels)
+
+                # Find the pixel that corresponds to the half-light radius
+                hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
+
+                # Get the area of pixels containing half the light
+                hlr_area = hlr_ind * pix_area
+
+                # Get the half-light radius
+                hlr = np.sqrt(hlr_area / np.pi)
+
+                # Store the results
+                results.setdefault(f"Luminosity/{spec_type}", {})[filt] = (
                     hlr * img.resolution.units
                 ).to("kpc")
 

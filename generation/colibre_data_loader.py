@@ -141,7 +141,7 @@ def _get_galaxies(
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
-        cent = np.mean(star_coords, axis=0)
+        cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
 
         # Derive the radii for star and gas particles
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")

@@ -8,7 +8,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.stars import binned_statistic
+from scipy.stats import binned_statistic
 
 
 def plot_size_evolution(filepath):

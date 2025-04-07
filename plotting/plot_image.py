@@ -125,4 +125,11 @@ if __name__ == "__main__":
         os.makedirs(outpath)
 
     # Call the function to plot the images
-    plot_each_filter(path, outpath, args.gal_ind)
+    plot_each_filter(
+        path,
+        outpath,
+        run_name,
+        variant,
+        args.snap,
+        args.gal_ind,
+    )

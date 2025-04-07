@@ -48,7 +48,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     ax.text(
         0.95,
         0.05,
-        f"$z={redshift}$",
+        f"$z={redshift:1f}$",
         bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
         transform=ax.transAxes,
         horizontalalignment="right",

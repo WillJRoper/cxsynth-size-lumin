@@ -369,7 +369,12 @@ if __name__ == "__main__":
     pipeline.get_images_luminosity(
         fov=61 * kpc,
         kernel=kernel_data,
+        spectra_type=(
+            "reprocessed",
+            "stellar_total",
+        ),
         instrument_subset="UV1500",
+        write=False if part_limit < 1000 else True,
     )
     pipeline.get_images_flux_psfs(
         fov=61 * kpc,
@@ -378,7 +383,7 @@ if __name__ == "__main__":
             "reprocessed",
             "stellar_total",
         ),
-        write=False,
+        write=False if part_limit < 1000 else True,
     )
 
     # Run the pipeline

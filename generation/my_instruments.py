@@ -31,7 +31,7 @@ def angular_to_physical(angular_res_arcsec, distance):
 
     # Apply the small-angle formula:
     # physical resolution = distance * angular resolution (in radians)
-    physical_resolution = distance * angular_res_rad
+    physical_resolution = distance * angular_res_rad.value
 
     # Convert the result to kiloparsecs:
     physical_resolution_kpc = physical_resolution.to("kpc")

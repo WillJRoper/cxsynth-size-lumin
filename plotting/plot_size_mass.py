@@ -129,7 +129,7 @@ if __name__ == "__main__":
     outpath = f"../plots/{run_name}/{variant}/size_mass_{args.snap:04d}.png"
 
     # Check if the file exists
-    if not os.path.exists(args.filepath):
-        raise FileNotFoundError(f"{args.filepath} does not exist.")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"{path} does not exist.")
 
     plot_size_mass_hex(path, outpath)

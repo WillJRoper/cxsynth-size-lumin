@@ -87,6 +87,12 @@ if __name__ == "__main__":
         default="THERMAL_AGN_m7",
     )
     parser.add_argument(
+        "--snap",
+        type=int,
+        help="The snapshot number to plot.",
+        default=0,
+    )
+    parser.add_argument(
         "--gal-ind",
         type=int,
         help="The index of the galaxy to plot.",
@@ -98,12 +104,16 @@ if __name__ == "__main__":
     # Define input and output paths
     run_name = args.run_name
     variant = args.variant
-    path = f"../data/{run_name}/{variant}/"
+    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{args.snap:04d}.hdf5"
     outpath = f"../plots/{run_name}/{variant}/images/"
+
+    # Check if the input file exists
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Input file {path} does not exist.")
 
     # Create the plot directory if it doesn't exist
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
     # Call the function to plot the images
-    plot_each_filter(path, outpath)
+    plot_each_filter(path, outpath, args.gal_ind)

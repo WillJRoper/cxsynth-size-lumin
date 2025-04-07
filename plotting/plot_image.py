@@ -45,9 +45,6 @@ def plot_cutout_grid(path, outpath, run_name, variant, snap, gal_ind=None):
         # Get the redshift of this galaxy
         redshift = hdf["Galaxies/Redshift"][gal_ind][0]
 
-        # Get the stellar mass of this galaxy
-        stellar_mass = hdf["Galaxies/Stars/StellarMass"][gal_ind][0]
-
     # Create the image collection
     img_coll = ImageCollection(
         resolution=1 * kpc,
@@ -93,7 +90,7 @@ def plot_cutout_grid(path, outpath, run_name, variant, snap, gal_ind=None):
     # Include the redshift in the title
     fig.suptitle(
         f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} "
-        f"(snap {snap}) with stellar mass {stellar_mass:.2e} Msun",
+        f"(snap {snap})",
         fontsize=16,
     )
 
@@ -142,9 +139,6 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
         # Get the redshift of this galaxy
         redshift = hdf["Galaxies/Redshift"][gal_ind][0]
 
-        # Get the stellar mass of this galaxy
-        stellar_mass = hdf["Galaxies/Stars/StellarMass"][gal_ind][0]
-
     # Create the image collection
     img_coll = ImageCollection(
         resolution=1 * kpc,
@@ -184,7 +178,7 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
     # Include the redshift in the title
     fig.suptitle(
         f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} "
-        f"(snap {snap}) with stellar mass {stellar_mass:.2e} Msun",
+        f"(snap {snap})",
         fontsize=16,
     )
 

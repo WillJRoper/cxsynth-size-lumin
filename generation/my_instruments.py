@@ -157,11 +157,15 @@ if __name__ == "__main__":
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
 
+    # Define the path to the filter data
+    # (this is the same for all snapshots)
+    filt_path = "../data"
+
     # Make the filters if they don't exist
     if not os.path.exists("../data/nircam_filters.hdf5") or not os.path.exists(
         "../data/miri_filters.hdf5"
     ):
-        make_filters("../data")
+        make_filters(filt_path)
 
     # Create the directory if it doesn't exist
     if not os.path.exists(f"../data/{run_name}/{variant}"):
@@ -191,4 +195,4 @@ if __name__ == "__main__":
 
         print(f"Making instruments for snapshot {snap} at redshift {redshift}.")
 
-        make_instruments(inst_path, redshift)
+        make_instruments(inst_path, filt_path, redshift)

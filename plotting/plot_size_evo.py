@@ -81,6 +81,10 @@ def plot_size_evolution(filepath):
     # Plot the data
     fig, ax = plt.subplots(figsize=(3.5, 3.5))
 
+    # Add a grid and make sure its always at the back
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
     # Plot the binned data
     ax.plot(
         (median_xs[:-1] + median_xs[1:]) / 2,

@@ -28,6 +28,10 @@ def plot_size_mass_hex(filepath, outpath):
     fig = plt.figure(figsize=(3.5, 3.5))
     ax = fig.add_subplot(111)
 
+    # Add a grid and make sure its always at the back
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
     # Remove galaxies with no flux
     mask = np.logical_and(mass > 0, sizes > 0)
     sizes = sizes[mask] * Mpc

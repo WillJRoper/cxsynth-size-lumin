@@ -72,6 +72,19 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
         show=False,
         vmin=vmin,
         vmax=vmax,
+        filters=(
+            "JWST/NIRCam.F090W",
+            "JWST/NIRCam.F115W",
+            "JWST/NIRCam.F150W",
+            "JWST/NIRCam.F200W",
+            "JWST/NIRCam.F277W",
+            "JWST/NIRCam.F356W",
+            "JWST/NIRCam.F444W",
+            "JWST/MIRI.F560W",
+            "JWST/MIRI.F770W",
+            "JWST/MIRI.F1000W",
+        ),
+        ncols=5,
     )
 
     # Include the redshift in the title

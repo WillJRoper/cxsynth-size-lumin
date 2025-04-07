@@ -11,13 +11,15 @@ from synthesizer.instruments.instrument import Instrument
 from unyt import angstrom, arcsecond, kpc
 
 
-def make_instruments(inst_path, z):
+def make_filters(filt_path):
     """
-    Generate the instrument files for the COLIBRE analysis.
+    Generate the filter collections for the COLIBRE analysis.
+
+    These are always the same regardless of the snapshot, so we can
+    just generate them once and save them to a file.
 
     Args:
-        inst_path (str): The path to save the instruments.
-        z (float): The redshift of the galaxies.
+        filt_path (str): The path to save the filters.
     """
     # Define the filters
     nircam_fs = FilterCollection(
@@ -31,6 +33,7 @@ def make_instruments(inst_path, z):
             "JWST/NIRCam.F444W",
         ]
     )
+    nircam_fs.write_filters(path=filt_path + "/nircam_filters.hdf5")
 
     miri_fs = FilterCollection(
         filter_codes=[
@@ -43,6 +46,20 @@ def make_instruments(inst_path, z):
             # "JWST/MIRI.F1800W",
         ]
     )
+    miri_fs.write_filters(path=filt_path + "/miri_filters.hdf5")
+
+
+def make_instruments(inst_path, filt_path, z):
+    """
+    Generate the instrument files for the COLIBRE analysis.
+
+    Args:
+        inst_path (str): The path to save the instruments.
+        z (float): The redshift of the galaxies.
+    """
+    # Define the filters
+    nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
+    miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
     top_hat = FilterCollection(
         tophat_dict={
             "UV1500": {"lam_eff": 1500 * angstrom, "lam_fwhm": 300 * angstrom},
@@ -139,6 +156,12 @@ if __name__ == "__main__":
 
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
+
+    # Make the filters if they don't exist
+    if not os.path.exists("../data/nircam_filters.hdf5") or not os.path.exists(
+        "../data/miri_filters.hdf5"
+    ):
+        make_filters("../data")
 
     # Create the directory if it doesn't exist
     if not os.path.exists(f"../data/{run_name}/{variant}"):

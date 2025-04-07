@@ -86,8 +86,8 @@ mpirun -np $SLURM_NTASKS python my_pipeline.py \
     --grid-dir /snap8/scratch/dp004/dc-rope1/flares_test \
     --snap $snap \
     --nthreads $SLURM_CPUS_PER_TASK \
-    --run-name '"${RUN_NAME}"' \
-    --variant '"${VARIANT}"' $PART_LIMIT
+    --run-name ${RUN_NAME} \
+    --variant ${VARIANT} $PART_LIMIT
 
 echo "Job done, info follows..."
 sacct -j $SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,MaxVMSize,Elapsed,ExitCode

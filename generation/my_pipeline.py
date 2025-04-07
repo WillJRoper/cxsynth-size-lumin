@@ -309,7 +309,6 @@ if __name__ == "__main__":
         instruments=InstrumentCollection(filepath=inst_path),
         nthreads=nthreads,
         comm=comm,
-        report_memory=True,
     )
 
     # Add the extra analysis functions we want

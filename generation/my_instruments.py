@@ -49,22 +49,24 @@ def make_filters(filt_path):
     miri_fs.write_filters(path=filt_path + "/miri_filters.hdf5")
 
 
-def make_instruments(inst_path, filt_path, z):
+def make_psfs(filt_path):
     """
-    Generate the instrument files for the COLIBRE analysis.
+    Generate the PSFs for the COLIBRE analysis.
+
+    These are always the same regardless of the snapshot, so we can
+    just generate them once and return them. (In truth, they would differ
+    based on location in the FOV and all sorts else... but for simplicities
+    sake we ignore there second order effects.)
 
     Args:
-        inst_path (str): The path to save the instruments.
-        z (float): The redshift of the galaxies.
+        filt_path (str): The path to save the filters.
+
+    Returns:
+        nircam_psfs (dict): The PSFs for the NIRCam filters.
+        miri_psfs (dict): The PSFs for the MIRI filters.
     """
-    # Define the filters
     nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
     miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
-    top_hat = FilterCollection(
-        tophat_dict={
-            "UV1500": {"lam_eff": 1500 * angstrom, "lam_fwhm": 300 * angstrom},
-        },
-    )
 
     # Set up the PSF dictionaries and webbpsf objects
     nircam_psfs = {}
@@ -83,6 +85,26 @@ def make_instruments(inst_path, filt_path, z):
         miri.filter = miri_filt.split(".")[-1]
         psf = miri.calc_psf(oversample=2)
         miri_psfs[miri_filt] = psf[0].data
+
+    return nircam_psfs, miri_psfs
+
+
+def make_instruments(inst_path, filt_path, z, nircam_psfs, miri_psfs):
+    """
+    Generate the instrument files for the COLIBRE analysis.
+
+    Args:
+        inst_path (str): The path to save the instruments.
+        z (float): The redshift of the galaxies.
+    """
+    # Define the filters
+    nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
+    miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
+    top_hat = FilterCollection(
+        tophat_dict={
+            "UV1500": {"lam_eff": 1500 * angstrom, "lam_fwhm": 300 * angstrom},
+        },
+    )
 
     # Define the angular resoltions
     nircam_res = 0.031 * arcsecond
@@ -171,6 +193,9 @@ if __name__ == "__main__":
     if not os.path.exists(f"../data/{run_name}/{variant}"):
         os.makedirs(f"../data/{run_name}/{variant}")
 
+    # Make the PSFs
+    nircam_psfs, miri_psfs = make_psfs(filt_path)
+
     # Loop over possible snapshots
     for snap_ind in range(0, 128):
         snap = str(snap_ind).zfill(4)
@@ -195,4 +220,4 @@ if __name__ == "__main__":
 
         print(f"Making instruments for snapshot {snap} at redshift {redshift}.")
 
-        make_instruments(inst_path, filt_path, redshift)
+        make_instruments(inst_path, filt_path, redshift, nircam_psfs, miri_psfs)

@@ -373,7 +373,7 @@ if __name__ == "__main__":
             "reprocessed",
             "stellar_total",
         ),
-        instrument_subset="UV1500",
+        instrument_subset=("UV1500",),
         write=False if part_limit < 1000 else True,
     )
     pipeline.get_images_flux_psfs(

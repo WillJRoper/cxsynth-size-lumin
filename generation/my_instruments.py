@@ -93,6 +93,19 @@ def make_psfs(filt_path):
         nircam_psfs (dict): The PSFs for the NIRCam filters.
         miri_psfs (dict): The PSFs for the MIRI filters.
     """
+    # Do the PSFs already exist?
+    if os.path.exists(filt_path + "/instrument_psfs.hdf5"):
+        # Read them into dictionaries
+        nircam_psfs = {}
+        miri_psfs = {}
+        with h5py.File(filt_path + "/instrument_psfs.hdf5", "r") as hf:
+            for key in hf["NIRCam"].keys():
+                nircam_psfs[key] = hf["NIRCam"][key][...]
+            for key in hf["MIRI"].keys():
+                miri_psfs[key] = hf["MIRI"][key][...]
+
+        return nircam_psfs, miri_psfs
+
     nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
     miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
 
@@ -113,6 +126,18 @@ def make_psfs(filt_path):
         miri.filter = miri_filt.split(".")[-1]
         psf = miri.calc_psf(oversample=2)
         miri_psfs[miri_filt] = psf[0].data
+
+    # Write the PSFs to files
+    with h5py.File(filt_path + "/instrument_psfs.hdf5", "w") as hf:
+        # NIRCam PSFs
+        group = hf.create_group("NIRCam")
+        for key, value in nircam_psfs.items():
+            group.create_dataset(key, data=value)
+
+        # MIRI PSFs
+        group = hf.create_group("MIRI")
+        for key, value in miri_psfs.items():
+            group.create_dataset(key, data=value)
 
     return nircam_psfs, miri_psfs
 

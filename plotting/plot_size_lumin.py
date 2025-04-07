@@ -45,6 +45,16 @@ def plot_size_flux_hex(filepath, filter, outpath):
         linewidths=0.1,
     )
 
+    ax.text(
+        0.95,
+        0.05,
+        f"$z={redshift}$",
+        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
+        transform=ax.transAxes,
+        horizontalalignment="right",
+        fontsize=8,
+    )
+
     # Set the axis labels
     ax.set_xlabel(f"$F_{filter} " r"/ [\mathrm{nJy}]$")
     ax.set_ylabel(f"$R_{1/2} /" r" [\mathrm{kpc}]$")

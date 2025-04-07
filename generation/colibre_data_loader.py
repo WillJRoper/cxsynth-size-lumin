@@ -320,7 +320,7 @@ def _get_galaxies(
                 radii=gas_radii,
                 redshift=redshift,
             ),
-            redshift=redshift,
+            redshift=redshift[0],
             centre=cent,
         )
 

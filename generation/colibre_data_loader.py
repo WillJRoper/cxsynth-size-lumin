@@ -34,10 +34,25 @@ def partition_galaxies(location, snap, part_limit, aperture):
     if len(gal_inds) == 0:
         return []
 
-    # Split the galaxies between the processes
-    indices = np.array_split(gal_inds, nranks)
+    # Now divide the galaxies between processes keeping the galaxies in
+    # contiguous chunks but balancing the number of stars on each process
+    stars_per_rank = np.zeros(nranks, dtype=int)
+    galaxies_on_rank = np.zeros(nranks, dtype=object)
+    target_stars = np.sum(nstars[gal_inds]) // nranks
+    for i in range(len(gal_inds)):
+        galaxies_on_rank[i] = []
+    igal = 0
+    current_rank = 0
+    while igal < len(gal_inds):
+        this_gal_ind = gal_inds[igal]
+        if stars_per_rank[current_rank] + nstars[this_gal_ind] > target_stars:
+            current_rank += 1
+            if current_rank >= nranks:
+                current_rank = nranks - 1
+        stars_per_rank[current_rank] += nstars[this_gal_ind]
+        galaxies_on_rank[current_rank].append(this_gal_ind)
 
-    return indices[this_rank]
+    return np.array(galaxies_on_rank[this_rank], dtype=int)
 
 
 def _set_up_swift_galaxy(

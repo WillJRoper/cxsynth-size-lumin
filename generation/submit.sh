@@ -53,7 +53,7 @@ cat >"$TMPFILE" <<EOF
 #!/bin/bash -l
 #SBATCH --ntasks=${NTASKS}
 #SBATCH -J SynthXCOLIBRE_${RUN_NAME}/${VARIANT}
-#SBATCH --output=../logs/survey_log_%A_%a_${RUN_NAME}_${VARIANT}.txt
+#SBATCH --output=../logs/%_x_%j_%A_%a.out
 #SBATCH -p ${PARTITION}
 #SBATCH -A dp004
 #SBATCH --exclusive

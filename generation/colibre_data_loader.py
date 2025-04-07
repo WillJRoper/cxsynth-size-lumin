@@ -140,13 +140,10 @@ def _get_galaxies(
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
-        cent = np.mean(
-            swift_gal.stars.coordinates.to_physical().to("Mpc"),
-            axis=0,
-        )
-        print(centre[gal_ind], cent)
-        # Derive the radii for star and gas particles
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
+        cent = np.mean(star_coords, axis=0)
+
+        # Derive the radii for star and gas particles
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")
         gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
         if gas_coords.size > 1:

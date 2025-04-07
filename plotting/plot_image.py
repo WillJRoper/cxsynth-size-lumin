@@ -164,9 +164,9 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
     # Plot the images
     img_coll.make_rgb_image(
         rgb_filters={
-            "R": ["JWST/NIRCam.F444W", "JWST/NIRCam.F356W"],
-            "G": ["JWST/NIRCam.F277W", "JWST/NIRCam.F200W"],
-            "B": ["JWST/NIRCam.F115W", "JWST/NIRCam.F150W"],
+            "R": ["NIRCam.F444W", "NIRCam.F356W"],
+            "G": ["NIRCam.F277W", "NIRCam.F200W"],
+            "B": ["NIRCam.F115W", "NIRCam.F150W"],
         }
     )
     fig, ax = img_coll.plot_rgb_image(

@@ -7,6 +7,7 @@
 RUN_NAME="L100_m7"
 VARIANT="THERMAL_AGN_m7"
 PART_LIMIT=""
+PARTITION="cosma8"
 
 # Parse named arguments
 while [[ "$#" -gt 0 ]]; do
@@ -21,6 +22,10 @@ while [[ "$#" -gt 0 ]]; do
         ;;
     --part-limit)
         PART_LIMIT="$2"
+        shift 2
+        ;;
+    --partition)
+        PARTITION="$2"
         shift 2
         ;;
     *)
@@ -40,7 +45,7 @@ cat >"$TMPFILE" <<EOF
 #SBATCH --ntasks=8
 #SBATCH -J SynthXCOLIBRE_${RUN_NAME}_${VARIANT}
 #SBATCH --output=../logs/survey_log_%A_%a_${RUN_NAME}_${VARIANT}.txt
-#SBATCH -p cosma8
+#SBATCH -p ${PARTITION}
 #SBATCH -A dp004
 #SBATCH --exclusive
 #SBATCH --cpus-per-task=16

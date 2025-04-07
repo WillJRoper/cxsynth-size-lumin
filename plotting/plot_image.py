@@ -55,7 +55,7 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     # Compute the 99.9 percentile of each image and take the maximum as
     # the normalization factor
     vmax = np.max(
-        [np.percentile(img_coll.imgs[key], 99.9) for key in img_dict.keys()],
+        [np.percentile(img_coll.imgs[key].arr, 99.9) for key in img_dict.keys()],
     )
     vmin = 0.0
 

@@ -51,7 +51,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     ax.text(
         0.95,
         0.05,
-        f"$z={redshift:1f}$",
+        f"$z={redshift:.1f}$",
         bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
         transform=ax.transAxes,
         horizontalalignment="right",
@@ -62,7 +62,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     median_xs = np.logspace(
         np.log10(np.min(flux)),
         np.log10(np.max(flux)),
-        100,
+        20,
     )
     median_ys = binned_statistic(
         flux,

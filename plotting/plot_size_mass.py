@@ -44,6 +44,7 @@ def plot_size_mass_hex(filepath, outpath):
         mincnt=1,
         cmap="viridis",
         xscale="log",
+        yscale="log",
         linewidths=0.1,
     )
 

@@ -56,7 +56,7 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     vmin = 0.0
 
     # Plot the images
-    fig, ax = img_coll.plot_imgs(
+    fig, ax = img_coll.plot_images(
         show=False,
         vmin=vmin,
         vmax=vmax,

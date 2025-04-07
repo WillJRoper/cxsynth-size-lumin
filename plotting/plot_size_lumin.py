@@ -72,7 +72,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     )
 
 
-def plot_size_flux_hex_uv(filepath, filtpath, outpath):
+def plot_size_lum_hex_uv(filepath, filtpath, outpath):
     """
     Plot the size-luminosity relation.
 
@@ -98,7 +98,7 @@ def plot_size_flux_hex_uv(filepath, filtpath, outpath):
         sizes = hdf["Galaxies/Stars/PixelHalfLightRadii/stellar_total/JWST"][filter][
             ...
         ]
-        flux = hdf["Galaxies/Stars/Photometry/Fluxes/stellar_total/JWST/"][filter][...]
+        flux = hdf["Galaxies/Stars/Photometry/Luminosities/stellar_total/UV1500"][...]
 
     # Create the plot
     fig = plt.figure(figsize=(3.5, 3.5))
@@ -132,7 +132,7 @@ def plot_size_flux_hex_uv(filepath, filtpath, outpath):
     )
 
     # Set the axis labels
-    ax.set_xlabel(r"$F_{" + filter.split(".")[-1] + r"} " r"/ [\mathrm{nJy}]$")
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{nJy}]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
 
     # Make and label the colorbar

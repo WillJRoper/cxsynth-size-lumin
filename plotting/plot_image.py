@@ -6,7 +6,7 @@ import os
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
-from synthesizer.imaging import ImageCollection
+from synthesizer.imaging import Image, ImageCollection
 from unyt import kpc
 
 
@@ -36,7 +36,11 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
 
         # Read each image for this galaxy into the dictionary
         for key in hdf[img_key].keys():
-            img_dict[key] = hdf[img_key][key][gal_ind, :, :]
+            img_dict[key] = Image(
+                resolution=1 * kpc,
+                fov=100 * kpc,
+                img=hdf[img_key][key][gal_ind, :, :],
+            )
 
         # Get the redshift of this galaxy
         redshift = hdf["Galaxies/Redshift"][gal_ind]

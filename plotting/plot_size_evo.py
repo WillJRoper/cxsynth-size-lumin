@@ -15,9 +15,12 @@ def plot_size_evolution(filepath):
     # Get all the files in the directory
     files = glob.glob(filepath + "/Synth*.hdf5")
 
-    # We need to make sure we only have the combined files so need to remove
-    # any that have _{a number}.hdf5 at the end
-    files = [f for f in files if not f.split(".")[:-1][-1].split("_")[-1].isdigit()]
+    # We need to make sure we only have the combined files, luckily these all
+    # have 1 extra element delineated by an underscore so we can use that to
+    # filter out the other files
+    lengths = [len(f.split("_")) for f in files]
+    combined_lengths = min(lengths)
+    files = [f for f in files if len(f.split("_")) == combined_lengths]
     print(f"Found {len(files)} files.")
     print(f"Files: {files}")
 

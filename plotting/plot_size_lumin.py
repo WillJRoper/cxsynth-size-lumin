@@ -44,7 +44,6 @@ def plot_size_flux_hex(filepath, filter, outpath):
         mincnt=1,
         cmap="viridis",
         xscale="log",
-        yscale="log",
         linewidths=0.1,
     )
 
@@ -62,7 +61,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     median_xs = np.logspace(
         np.log10(np.min(flux)),
         np.log10(np.max(flux)),
-        20,
+        15,
     )
     median_ys = binned_statistic(
         flux,
@@ -73,7 +72,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     ax.plot(
         (median_xs[:-1] + median_xs[1:]) / 2,
         median_ys,
-        color="k",
+        color="r",
         linestyle="--",
         label="Median",
     )
@@ -89,7 +88,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     ax.legend(
         loc="best",
         fontsize=8,
-        frameon=False,
+        fancybox=True,
     )
 
     fig.savefig(

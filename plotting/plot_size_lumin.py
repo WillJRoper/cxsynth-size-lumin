@@ -5,6 +5,7 @@ import os
 
 import h5py
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot_size_flux_hex(filepath, filter, outpath):
@@ -28,7 +29,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     ax = fig.add_subplot(111)
 
     # Remove galaxies with no flux
-    mask = flux > 0
+    mask = np.logical_and(flux > 0, sizes > 0)
     flux = flux[mask]
     sizes = sizes[mask]
 

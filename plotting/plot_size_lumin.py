@@ -71,7 +71,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
         bins=median_xs,
     )[0]
     ax.plot(
-        median_xs,
+        (median_xs[:-1] + median_xs[1:]) / 2,
         median_ys,
         color="k",
         linestyle="--",

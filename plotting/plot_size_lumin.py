@@ -6,6 +6,7 @@ import os
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import binned_statistic
 from synthesizer.instruments import FilterCollection
 from unyt import angstrom
 
@@ -57,6 +58,26 @@ def plot_size_flux_hex(filepath, filter, outpath):
         fontsize=8,
     )
 
+    # Plot a median line
+    median_xs = np.logspace(
+        np.log10(np.min(flux)),
+        np.log10(np.max(flux)),
+        100,
+    )
+    median_ys = binned_statistic(
+        flux,
+        sizes,
+        statistic="median",
+        bins=median_xs,
+    )[0]
+    ax.plot(
+        median_xs,
+        median_ys,
+        color="k",
+        linestyle="--",
+        label="Median",
+    )
+
     # Set the axis labels
     ax.set_xlabel(r"$F_{" + filter.split(".")[-1] + r"} " r"/ [\mathrm{nJy}]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
@@ -64,6 +85,12 @@ def plot_size_flux_hex(filepath, filter, outpath):
     # Make and label the colorbar
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label(r"$N_{\mathrm{gal}}$")
+
+    ax.legend(
+        loc="best",
+        fontsize=8,
+        frameon=False,
+    )
 
     fig.savefig(
         outpath,

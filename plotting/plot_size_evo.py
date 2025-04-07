@@ -44,3 +44,10 @@ if __name__ == "__main__":
     # Check if the file exists
     if not os.path.exists(path):
         raise FileNotFoundError(f"{path} does not exist.")
+
+    # Create the output directory if it doesn't exist
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    # Plot the size evolution
+    plot_size_evolution(path)

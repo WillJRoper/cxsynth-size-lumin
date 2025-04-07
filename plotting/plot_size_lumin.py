@@ -176,4 +176,4 @@ if __name__ == "__main__":
         raise FileNotFoundError(f"{args.filepath} does not exist.")
 
     # Plot the size-luminosity relation
-    plot_size_flux_hex_uv(args.filepath, args.filter, args.outpath)
+    plot_size_lum_hex_uv(args.filepath, args.filter, args.outpath)

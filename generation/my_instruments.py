@@ -37,10 +37,10 @@ def make_instruments(inst_path, z):
             "JWST/MIRI.F560W",
             "JWST/MIRI.F770W",
             "JWST/MIRI.F1000W",
-            "JWST/MIRI.F1130W",
-            "JWST/MIRI.F1280W",
-            "JWST/MIRI.F1500W",
-            "JWST/MIRI.F1800W",
+            # "JWST/MIRI.F1130W",
+            # "JWST/MIRI.F1280W",
+            # "JWST/MIRI.F1500W",
+            # "JWST/MIRI.F1800W",
         ]
     )
     top_hat = FilterCollection(

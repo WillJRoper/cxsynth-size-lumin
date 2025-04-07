@@ -10,7 +10,7 @@ from synthesizer.imaging import ImageCollection
 from unyt import kpc
 
 
-def plot_each_filter(path, outpath, gal_ind=None):
+def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     """
     Plot the images of a galaxy in different filters.
 
@@ -38,6 +38,9 @@ def plot_each_filter(path, outpath, gal_ind=None):
         for key in hdf[img_key].keys():
             img_dict[key] = hdf[img_key][key][gal_ind, :, :]
 
+        # Get the redshift of this galaxy
+        redshift = hdf["Galaxies/Redshift"][gal_ind]
+
     # Create the image collection
     img_coll = ImageCollection(
         resolution=1 * kpc,
@@ -57,6 +60,12 @@ def plot_each_filter(path, outpath, gal_ind=None):
         show=False,
         vmin=vmin,
         vmax=vmax,
+    )
+
+    # Include the redshift in the title
+    fig.suptitle(
+        f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} (snap {snap})",
+        fontsize=16,
     )
 
     fig.savefig(

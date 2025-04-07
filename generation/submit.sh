@@ -84,10 +84,10 @@ sacct -j $SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,M
 EOF
 
 # Optionally, display the temporary script for debugging
-cat "$TMPFILE"
+#cat "$TMPFILE"
 
 # Submit the job using sbatch
-#sbatch "$TMPFILE"
+sbatch "$TMPFILE"
 
 # Optionally remove the temporary file after submission.
 # rm "$TMPFILE"

@@ -162,10 +162,10 @@ if __name__ == "__main__":
 
     # Lower mass limit?
     parser.add_argument(
-        "--lower-mass-lim",
-        type=float,
+        "--part-limit",
+        type=int,
         help="The lower mass limit for galaxies.",
-        default=1e7,
+        default=100,
     )
 
     # Aperture?
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     run_name = args.run_name
     variant = args.variant
 
-    lower_mass_lim = args.lower_mass_lim
+    part_limit = args.part_limit
 
     # Define the whole path to the data
     path = f"{run_folder}/{run_name}/{variant}/"
@@ -247,11 +247,19 @@ if __name__ == "__main__":
     )
     redshift = redshifts[args.snap_ind]
 
-    # Define the output path
-    outpath = (
-        f"../data/{run_name}/{variant}/"
-        f"Synthesized_imgs_{snap}_{grid_name_no_ext}.hdf5"
-    )
+    # Define the output path, for special particle limits we all include that
+    # info
+    if part_limit == 100:
+        outpath = (
+            f"../data/{run_name}/{variant}/"
+            f"Synthesized_imgs_{snap}_{grid_name_no_ext}.hdf5"
+        )
+    else:
+        outpath = (
+            f"../data/{run_name}/{variant}/"
+            f"Synthesized_imgs_{snap}_{grid_name_no_ext}_"
+            f"part_limit_{part_limit}.hdf5"
+        )
 
     # Define the instrument path
     inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
@@ -278,7 +286,7 @@ if __name__ == "__main__":
     indices = partition_galaxies(
         location=path,
         snap=snap,
-        lower_mass_lim=lower_mass_lim,
+        part_limit=part_limit,
         aperture=aperture,
     )
 

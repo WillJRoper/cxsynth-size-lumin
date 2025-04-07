@@ -9,7 +9,7 @@ from synthesizer.particle import Galaxy, Gas, Stars
 from unyt import Gyr, Myr, kpc, unyt_array
 
 
-def partition_galaxies(location, snap, lower_mass_lim, aperture):
+def partition_galaxies(location, snap, part_limit, aperture):
     """Partition the galaxies between the MPI processes."""
     # Get the number of processes and this rank
     nranks = mpi.COMM_WORLD.Get_size()
@@ -28,7 +28,7 @@ def partition_galaxies(location, snap, lower_mass_lim, aperture):
     gal_inds = np.arange(len(nstars))
 
     # Sanitise away galaxies below the threshold
-    gal_inds = gal_inds[nstars >= 100]
+    gal_inds = gal_inds[nstars >= part_limit]
 
     # If we have no galaxies, we can't do anything
     if len(gal_inds) == 0:

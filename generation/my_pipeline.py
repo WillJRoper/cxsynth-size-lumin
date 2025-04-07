@@ -200,6 +200,9 @@ if __name__ == "__main__":
     # Some metadata we'll use
     aperture = args.aperture
 
+    # Get a version of the grid name with an extension for labelling
+    grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
+
     # Read in the redshift and while we do it make sure we actually have
     # SOAP data for this snap
     try:
@@ -245,7 +248,10 @@ if __name__ == "__main__":
     redshift = redshifts[args.snap_ind]
 
     # Define the output path
-    outpath = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}.hdf5"
+    outpath = (
+        f"../data/{run_name}/{variant}/"
+        f"Synthesized_imgs_{snap}_{grid_name_no_ext}.hdf5"
+    )
 
     # Define the instrument path
     inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
@@ -349,7 +355,11 @@ if __name__ == "__main__":
     pipeline.get_photometry_luminosities()
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
-    # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    pipeline.get_images_luminosity(
+        fov=61 * kpc,
+        kernel=kernel_data,
+        instrument_subset="UV1500",
+    )
     pipeline.get_images_flux_psfs(
         fov=61 * kpc,
         kernel=kernel_data,

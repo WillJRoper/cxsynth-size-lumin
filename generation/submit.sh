@@ -7,6 +7,8 @@
 RUN_NAME="L100_m7"
 VARIANT="THERMAL_AGN_m7"
 PART_LIMIT=""
+NTASKS=8
+NTHREADS=16
 PARTITION="cosma8"
 
 # Parse named arguments
@@ -22,6 +24,14 @@ while [[ "$#" -gt 0 ]]; do
         ;;
     --part-limit)
         PART_LIMIT="$2"
+        shift 2
+        ;;
+    --ntasks)
+        NTASKS="$2"
+        shift 2
+        ;;
+    --nthreads)
+        NTHREADS="$2"
         shift 2
         ;;
     --partition)
@@ -42,13 +52,13 @@ TMPFILE=$(mktemp /tmp/submit_job.XXXXXX.sh)
 # Note that we use variable expansion (via <<EOF) for parameters that need to be injected.
 cat >"$TMPFILE" <<EOF
 #!/bin/bash -l
-#SBATCH --ntasks=8
+#SBATCH --ntasks=${NTASKS}
 #SBATCH -J SynthXCOLIBRE_${RUN_NAME}/${VARIANT}
 #SBATCH --output=../logs/survey_log_%A_%a_${RUN_NAME}_${VARIANT}.txt
 #SBATCH -p ${PARTITION}
 #SBATCH -A dp004
 #SBATCH --exclusive
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=${NTHREADS}
 #SBATCH --time=24:00:00
 #SBATCH --array=0-127
 

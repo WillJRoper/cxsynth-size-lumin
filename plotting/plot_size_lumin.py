@@ -80,12 +80,16 @@ def plot_size_lum_hex_uv(filepath, filtpath, outpath):
         filepath (str): The path to the file to plot.
     """
     # Load the filters
-    filters = FilterCollection(path=filtpath)
+    nircam_filters = FilterCollection(path=filtpath + "/nircam_filters.hdf5")
+    miri_filters = FilterCollection(path=filtpath + "/miri_filters.hdf5")
+    filters = nircam_filters + miri_filters
 
     # Open the file and extract the sizes and luminosities
     with h5py.File(filepath, "r") as hdf:
         # Get the redshift (it's the same for all galaxies)
         redshift = hdf["Galaxies/Redshift"][0]
+
+        print("Plotting the size-luminosity relation at z=", redshift)
 
         # What filter does 1500 angstrom correspond to at this redshift?
         search_lam = 1500 * angstrom
@@ -162,6 +166,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--filtpath",
         type=str,
+        default="../data",
         help="The path to the filter data.",
     )
     parser.add_argument(

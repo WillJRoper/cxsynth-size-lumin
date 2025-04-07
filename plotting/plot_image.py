@@ -59,6 +59,10 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     )
     vmin = 0.0
 
+    print(f"Max value: {vmax}")
+    print(f"Min value: {vmin}")
+    print(f"Redshift: {redshift}/Snap: {snap}")
+
     # Plot the images
     fig, ax = img_coll.plot_images(
         show=False,

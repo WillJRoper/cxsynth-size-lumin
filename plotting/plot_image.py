@@ -63,7 +63,7 @@ def plot_each_filter(path, outpath, run_name, variant, snap, gal_ind=None):
     print(f"Min value: {vmin}")
     print(f"Redshift: {redshift}/Snap: {snap}")
     print(
-        f"Making Galaxe {gal_ind} from"
+        f"Making Galaxy {gal_ind} from"
         f" {run_name}/{variant} at z={redshift:.2f} (snap {snap})",
     )
 

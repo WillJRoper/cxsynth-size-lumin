@@ -82,12 +82,19 @@ def plot_size_evolution(filepath):
     fig, ax = plt.subplots(figsize=(3.5, 3.5))
 
     # Plot the binned data
-    ax.errorbar(
+    ax.plot(
         (median_xs[:-1] + median_xs[1:]) / 2,
         median_ys,
-        yerr=median_ys_std,
-        fmt="o",
         color="k",
+        linestyle="-",
+        label="Median",
+    )
+    ax.fill_between(
+        (median_xs[:-1] + median_xs[1:]) / 2,
+        median_ys - median_ys_std,
+        median_ys + median_ys_std,
+        color="b",
+        alpha=0.2,
     )
 
     # Plot the fit

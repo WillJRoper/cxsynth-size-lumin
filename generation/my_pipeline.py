@@ -203,6 +203,8 @@ if __name__ == "__main__":
     # Get a version of the grid name with an extension for labelling
     grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
 
+    print(path)
+
     # Read in the redshift and while we do it make sure we actually have
     # SOAP data for this snap
     try:

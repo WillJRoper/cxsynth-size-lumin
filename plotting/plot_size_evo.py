@@ -58,7 +58,7 @@ def plot_size_evolution(filepath):
     # each bin so we can plot the error bars
     median_xs = np.arange(
         -0.5,
-        np.max(redshifts) + 0.5,  # We want to include the last bin
+        np.max(redshifts) + 1.5,  # We want to include the last bin
         1.0,
     )
     median_ys = binned_statistic(

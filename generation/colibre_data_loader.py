@@ -180,25 +180,17 @@ def _get_galaxies(
     gals = np.empty(ngals, dtype=object)
 
     # Get centres in physical coordinates
-    if fof_only:
-        cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
-        centre = cat.input_halos.halo_centre.to("Mpc")
-    else:
-        centre = soap.centre.to("Mpc")
+    centre = soap.centre.to_physical().to("Mpc")
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
-        star_coords = swift_gal.stars.coordinates.to("Mpc")
-        if fof_only:
-            cent = centre[gal_ind]
-            print(cent, np.average(star_coords, axis=0, weights=swift_gal.stars.masses))
-        else:
-            cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
+        star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
+        cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
 
         # Derive the radii for star and gas particles
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")
-        gas_coords = swift_gal.gas.coordinates.to("Mpc")
+        gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
         if gas_coords.size > 1:
             gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
         elif gas_coords.size == 1:
@@ -207,13 +199,6 @@ def _get_galaxies(
             )
         else:
             gas_radii = unyt_array(np.array([]), "kpc")
-
-        # Convert radii and coords to physical units
-        star_radii = star_radii.to_physical()
-        gas_radii = gas_radii.to_physical()
-        star_coords = star_coords.to_physical()
-        gas_coords = gas_coords.to_physical()
-        cent = cent.to_physical()
 
         # Define masks for the particles within the aperture
         star_mask = star_radii <= (aperture * kpc)

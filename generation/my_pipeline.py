@@ -333,6 +333,11 @@ if __name__ == "__main__":
     )
     print(f"Reading took {time.perf_counter() - read_start:.2f} seconds.")
 
+    # If any rank has 0 galaxies we must abort
+    if len(galaxies) == 0:
+        print("No galaxies found.")
+        comm.Abort()
+
     # Set up the pipeline
     pipeline = Pipeline(
         emission_model=get_emission_model(grid_name, grid_dir),

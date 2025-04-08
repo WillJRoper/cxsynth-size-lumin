@@ -227,14 +227,48 @@ if __name__ == "__main__":
         help="The index of the galaxy to plot.",
         default=None,
     )
+    parser.add_argument(
+        "--part-limit",
+        type=int,
+        help="The lower mass limit for galaxies.",
+        default=100,
+    )
+    parser.add_argument(
+        "--fof-only",
+        action="store_true",
+        help="If true, only load the FOF groups.",
+    )
+    parser.add_argument(
+        "--grid",
+        type=str,
+        help="The path to the grid.",
+    )
 
     args = parser.parse_args()
 
     # Define input and output paths
     run_name = args.run_name
     variant = args.variant
+    part_limit = args.part_limit
+    fof_only = args.fof_only
+    grid_name = args.grid
+    grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
+    snap = str(args.snap).zfill(4)
     path = f"../data/{run_name}/{variant}/Synthesized_imgs_{args.snap:04d}.hdf5"
     outpath = f"../plots/{run_name}/{variant}/images/"
+
+    # Define the output path, for special particle limits we all include that
+    # info
+    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
+    outpath = f"../plots/{run_name}/{variant}/"
+    if part_limit != 100:
+        path += f"_part_limit_{part_limit}"
+        outpath += f"/part_limit_{part_limit}"
+    if fof_only:
+        path += "_FOFGroups"
+        outpath += "/FOFGroups"
+    path += ".hdf5"
+    outpath += "/images/"
 
     # Check if the input file exists
     if not os.path.exists(path):

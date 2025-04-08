@@ -96,6 +96,7 @@ def get_pixel_based_hlr(obj):
                 ).to("kpc")
 
     # Also do the Rest frame luminosity
+    print("Non-PSFed images:", obj.images_lnu.keys())
     for inst_name, d in obj.images_lnu.items():
         # Loop over spectrum types
         for spec_type, imgs in d.items():

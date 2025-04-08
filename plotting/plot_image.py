@@ -96,7 +96,7 @@ def plot_cutout_grid(path, outpath, run_name, variant, snap, gal_ind=None):
 
     fig.savefig(
         outpath + f"cutout_{gal_ind}.png",
-        dpi=300,
+        dpi=1000,
         bbox_inches="tight",
     )
 
@@ -177,20 +177,19 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
     )
     fig, ax, _ = img_coll.plot_rgb_image(
         show=False,
-        vmin=vmin,
-        vmax=vmax,
+        figsize=(1, 1),
     )
 
     # Include the redshift in the title
     fig.suptitle(
         f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} "
         f"(snap {snap})",
-        fontsize=16,
+        fontsize=5,
     )
 
     fig.savefig(
         outpath + f"rgb_cutout_{gal_ind}.png",
-        dpi=300,
+        dpi=1000,
         bbox_inches="tight",
     )
 

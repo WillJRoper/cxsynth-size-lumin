@@ -43,7 +43,7 @@ def plot_cutout_grid(path, outpath, run_name, variant, snap, gal_ind=None):
             )
 
         # Get the redshift of this galaxy
-        redshift = hdf["Galaxies/Redshift"][gal_ind][0]
+        redshift = hdf["Galaxies/Redshift"][gal_ind]
 
     # Create the image collection
     img_coll = ImageCollection(
@@ -137,7 +137,7 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
             )
 
         # Get the redshift of this galaxy
-        redshift = hdf["Galaxies/Redshift"][gal_ind][0]
+        redshift = hdf["Galaxies/Redshift"][gal_ind]
 
     # Create the image collection
     img_coll = ImageCollection(

@@ -308,6 +308,7 @@ if __name__ == "__main__":
         snap=snap,
         part_limit=part_limit,
         aperture=aperture,
+        fof_only=fof_only,
     )
 
     # Do we have any galaxies anywhere? If not, we can't do anything

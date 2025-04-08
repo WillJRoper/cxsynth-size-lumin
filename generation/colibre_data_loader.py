@@ -98,10 +98,10 @@ def _set_up_swift_galaxy(
         return None, None, aexp, redshift
 
     # Define the custom spatial offset if we need one
-    custom_spatial_offset = None
+    custom_spatial_offsets = None
     if fof_only:
         # Get the FOF group centre
-        custom_spatial_offset = cosmo_array(
+        custom_spatial_offsets = cosmo_array(
             [[-1, 1], [-1, 1], [-1, 1]],
             Mpc,
             comoving=True,
@@ -113,7 +113,7 @@ def _set_up_swift_galaxy(
         f"{location}/SOAP/halo_properties_{snap}.hdf5",
         soap_index=chunk_inds,
         extra_mask="bound_only" if not fof_only else "fof",
-        custom_spatial_offset=custom_spatial_offset,
+        custom_spatial_offsets=custom_spatial_offsets,
     )
 
     # By predefining these attributes we can speed up the loading of the data

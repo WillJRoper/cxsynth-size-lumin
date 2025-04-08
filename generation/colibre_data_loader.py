@@ -5,8 +5,9 @@ import numpy as np
 import swiftsimio
 from mpi4py import MPI as mpi
 from swiftgalaxy import SOAP, SWIFTGalaxies
+from swiftsimio import cosmo_array
 from synthesizer.particle import Galaxy, Gas, Stars
-from unyt import Gyr, Myr, kpc, unyt_array
+from unyt import Gyr, Mpc, Myr, kpc, unyt_array
 
 
 def partition_galaxies(location, snap, part_limit, aperture, fof_only):
@@ -96,10 +97,23 @@ def _set_up_swift_galaxy(
     if len(chunk_inds) == 0:
         return None, None, aexp, redshift
 
+    # Define the custom spatial offset if we need one
+    custom_spatial_offset = None
+    if fof_only:
+        # Get the FOF group centre
+        custom_spatial_offset = cosmo_array(
+            [[-1, 1], [-1, 1], [-1, 1]],
+            Mpc,
+            comoving=True,
+            scale_factor=aexp,
+            scale_exponent=1,
+        )
+
     soap = SOAP(
         f"{location}/SOAP/halo_properties_{snap}.hdf5",
         soap_index=chunk_inds,
         extra_mask="bound_only" if not fof_only else "fof",
+        custom_spatial_offset=custom_spatial_offset,
     )
 
     # By predefining these attributes we can speed up the loading of the data

@@ -9,7 +9,7 @@ from synthesizer.particle import Galaxy, Gas, Stars
 from unyt import Gyr, Myr, kpc, unyt_array
 
 
-def partition_galaxies(location, snap, part_limit, aperture):
+def partition_galaxies(location, snap, part_limit, aperture, fof_only):
     """Partition the galaxies between the MPI processes."""
     # Get the number of processes and this rank
     nranks = mpi.COMM_WORLD.Get_size()
@@ -27,8 +27,16 @@ def partition_galaxies(location, snap, part_limit, aperture):
     # Create an array of galaxy indices
     gal_inds = np.arange(len(nstars))
 
-    # Sanitise away galaxies below the threshold
-    gal_inds = gal_inds[nstars >= part_limit]
+    # Create the mask for galaxies above the particle limit
+    mask = nstars >= part_limit
+
+    # If we are only doing the FOF then we want to ensure we only have centrals
+    if fof_only:
+        is_central = cat.input_halos.is_central.to_value()
+        mask = np.logical_and(mask, is_central)
+
+    # Apply the mask to the galaxy indices
+    gal_inds = gal_inds[mask]
 
     # If we have no galaxies, we can't do anything
     if len(gal_inds) == 0:

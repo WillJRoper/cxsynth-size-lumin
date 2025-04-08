@@ -10,6 +10,7 @@ PART_LIMIT=""
 NTASKS=8
 NTHREADS=16
 PARTITION="cosma8"
+FOFONLY=0
 
 # Parse named arguments
 while [[ "$#" -gt 0 ]]; do
@@ -36,6 +37,10 @@ while [[ "$#" -gt 0 ]]; do
         ;;
     --partition)
         PARTITION="$2"
+        shift 2
+        ;;
+    --fof-only)
+        FOFONLY=1
         shift 2
         ;;
     *)
@@ -75,6 +80,13 @@ else
     echo "PART_LIMIT=\"\"" >>"$TMPFILE"
 fi
 
+# Create the fof argument depending on the flag
+if [ "$FOFONLY" -eq 1 ]; then
+    FOF_ARG="--fof-only"
+else
+    FOF_ARG=""
+fi
+
 # Append the main execution block.
 # We use a here-document with unquoted EOF so that wrapper variables are expanded,
 # but we escape the SLURM variables so they remain literal in the SBATCH script.
@@ -87,7 +99,7 @@ mpirun -np \$SLURM_NTASKS python my_pipeline.py \\
     --snap \$snap \\
     --nthreads \$SLURM_CPUS_PER_TASK \\
     --run-name ${RUN_NAME} \\
-    --variant ${VARIANT} \$PART_LIMIT
+    --variant ${VARIANT} \$PART_LIMIT ${FOF_ARG}
 
 echo "Job done, info follows..."
 sacct -j \$SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,MaxVMSize,Elapsed,ExitCode

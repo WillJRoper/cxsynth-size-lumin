@@ -34,15 +34,30 @@ def load_galaxies(
     cosmo,
     aperture,
     nthreads=1,
+    fof_only=False,
 ):
-    """Load the galaxies into memory."""
-    # If we have no galaxies exit, we'll deal with it later
+    """
+    Load the galaxies into memory.
+
+    Args:
+        partition (list): The list of galaxies to load.
+        location (str): The location of the data.
+        snap (str): The snapshot to load.
+        cosmo (w0waCDM): The cosmology to use.
+        aperture (float): The aperture to use.
+        nthreads (int): The number of threads to use.
+        fof_only (bool): If True, only load the FOF groups.
+
+    Returns:
+        list: The list of galaxies.
+    """
+    # If we have no galaxies exist, exit we'll deal with it later
     if len(partition) < 2:
         return []
 
     # If we aren't multithreaded then just load the galaxies
     if nthreads == 1 or nthreads == 0 or partition.size < nthreads:
-        galaxies = _get_galaxies(partition, location, snap, cosmo, aperture)
+        galaxies = _get_galaxies(partition, location, snap, cosmo, aperture, fof_only)
 
     # Otherwise, distribute the read
     else:
@@ -53,6 +68,7 @@ def load_galaxies(
             snap=snap,
             cosmo=cosmo,
             aperture=aperture,
+            fof_only=fof_only,
         )
 
         # Equally split the partition into nthreads chunks
@@ -176,6 +192,13 @@ if __name__ == "__main__":
         default=100,
     )
 
+    # Galaxies or FOF groups?
+    parser.add_argument(
+        "--fof-only",
+        action="store_true",
+        help="If true, only load the FOF groups.",
+    )
+
     # Get MPI info
     comm = mpi.COMM_WORLD
     rank = comm.Get_rank()
@@ -192,13 +215,15 @@ if __name__ == "__main__":
     run_name = args.run_name
     variant = args.variant
 
+    # Switches for behaviour
     part_limit = args.part_limit
-
-    # Define the whole path to the data
-    path = f"{run_folder}/{run_name}/{variant}/"
+    fof_only = args.fof_only
 
     # Some metadata we'll use
     aperture = args.aperture
+
+    # Define the whole path to the data
+    path = f"{run_folder}/{run_name}/{variant}/"
 
     # Get a version of the grid name with an extension for labelling
     grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
@@ -308,6 +333,7 @@ if __name__ == "__main__":
         cosmo=cosmo,
         aperture=aperture,
         nthreads=nthreads,
+        fof_only=fof_only,
     )
     print(f"Reading took {time.perf_counter() - read_start:.2f} seconds.")
 

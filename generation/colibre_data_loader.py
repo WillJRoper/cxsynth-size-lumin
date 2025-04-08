@@ -64,7 +64,21 @@ def _set_up_swift_galaxy(
     location,
     snap,
     chunk_inds,
+    fof_only=False,
 ):
+    """
+    Set up the SWIFT galaxy object.
+
+    Args:
+        location (str): The location of the data.
+        snap (str): The snapshot to load.
+        chunk_inds (np.ndarray): The indices of the galaxies to load.
+        fof_only (bool): Whether to only load the FOF groups.
+
+    Returns:
+        tuple: A tuple containing the SOAP object, the SWIFT galaxies object,
+            the scale factor, and the redshift.
+    """
     # Read in some useful metadata
     with h5py.File(f"{location}/SOAP/halo_properties_{snap}.hdf5") as hf:
         aexp = hf["Cosmology"].attrs["Scale-factor"]
@@ -77,7 +91,7 @@ def _set_up_swift_galaxy(
     soap = SOAP(
         f"{location}/SOAP/halo_properties_{snap}.hdf5",
         soap_index=chunk_inds,
-        extra_mask="bound_only",
+        extra_mask="bound_only" if not fof_only else "fof",
     )
 
     # By predefining these attributes we can speed up the loading of the data
@@ -113,6 +127,7 @@ def _get_galaxies(
     snap,
     cosmo,
     aperture,
+    fof_only,
 ):
     """
     Get a galaxy from the master file.
@@ -123,6 +138,7 @@ def _get_galaxies(
         snap (str): The snapshot to load.
         cosmo (astropy.cosmology): The cosmology to use.
         aperture (float): The aperture to use.
+        fof_only (bool): Whether to only load the FOF groups.
 
     Returns:
         np.ndarray: An array of galaxy objects.
@@ -149,6 +165,7 @@ def _get_galaxies(
         location,
         snap,
         chunk_inds,
+        fof_only,
     )
 
     # Initialise a container for the galaxies we are about to load

@@ -106,7 +106,7 @@ def _set_up_swift_galaxy(
             [[-1, 1], [-1, 1], [-1, 1]],
             Mpc,
             comoving=True,
-            scale_factor=cat.cosmology.scale_factor,
+            scale_factor=cat.metadata.a,
             scale_exponent=1,
         )
 

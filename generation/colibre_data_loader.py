@@ -100,12 +100,13 @@ def _set_up_swift_galaxy(
     # Define the custom spatial offset if we need one
     custom_spatial_offsets = None
     if fof_only:
+        cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
         # Get the FOF group centre
         custom_spatial_offsets = cosmo_array(
             [[-1, 1], [-1, 1], [-1, 1]],
             Mpc,
             comoving=True,
-            scale_factor=aexp,
+            scale_factor=cat.cosmology.scale_factor,
             scale_exponent=1,
         )
 

@@ -274,17 +274,12 @@ if __name__ == "__main__":
 
     # Define the output path, for special particle limits we all include that
     # info
-    if part_limit == 100:
-        outpath = (
-            f"../data/{run_name}/{variant}/"
-            f"Synthesized_imgs_{snap}_{grid_name_no_ext}.hdf5"
-        )
-    else:
-        outpath = (
-            f"../data/{run_name}/{variant}/"
-            f"Synthesized_imgs_{snap}_{grid_name_no_ext}_"
-            f"part_limit_{part_limit}.hdf5"
-        )
+    outpath = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
+    if part_limit != 100:
+        outpath += f"_part_limit_{part_limit}"
+    if fof_only:
+        outpath += "_FOFGroups"
+    outpath += ".hdf5"
 
     # Define the instrument path
     inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"

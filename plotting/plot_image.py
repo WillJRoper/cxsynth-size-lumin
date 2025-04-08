@@ -177,7 +177,6 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
     )
     fig, ax, _ = img_coll.plot_rgb_image(
         show=False,
-        figsize=(1, 1),
     )
 
     # Include the redshift in the title

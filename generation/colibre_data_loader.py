@@ -180,13 +180,21 @@ def _get_galaxies(
     gals = np.empty(ngals, dtype=object)
 
     # Get centres in physical coordinates
-    centre = soap.centre.to_physical().to("Mpc")
+    if fof_only:
+        cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
+        centre = cat.input_halos.halo_centre.to_physical().to("Mpc")
+    else:
+        centre = soap.centre.to_physical().to("Mpc")
 
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
-        cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
+        if fof_only:
+            cent = centre[gal_ind]
+            print(cent, np.average(star_coords, axis=0, weights=swift_gal.stars.masses))
+        else:
+            cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
 
         # Derive the radii for star and gas particles
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")

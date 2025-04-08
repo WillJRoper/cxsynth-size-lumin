@@ -366,5 +366,6 @@ if __name__ == "__main__":
     # Plot the size-luminosity relation
     if args.filter is not None:
         plot_size_flux_hex(path, args.filter, outpath)
+        plot_size_flux_comp(path, args.filter, outpath)
     else:
         plot_size_lum_hex_uv(path, args.filtpath, outpath)

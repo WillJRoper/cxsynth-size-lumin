@@ -6,9 +6,28 @@ import os
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 from synthesizer.instruments import FilterCollection
 from unyt import angstrom
+
+# Lstar = M_to_lum(-21)
+Lstar = 10**28.51
+
+
+def size_lumin_fit(lum, Lstar, r0, b):
+    """
+    Fit the size-luminosity relation.
+
+    Args:
+        l (float): The luminosity.
+        Lstar (float): The characteristic luminosity.
+        b (float): The slope of the relation.
+
+    Returns:
+        float: The size.
+    """
+    return r0 * (lum / Lstar) ** b
 
 
 def plot_size_flux_hex(filepath, filter, outpath):
@@ -96,7 +115,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     )
 
     fig.savefig(
-        outpath,
+        outpath + f"Obs_{filter.split('.')[-1]}_size_flux_hex.png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -178,18 +197,124 @@ def plot_size_lum_hex_uv(filepath, filtpath, outpath):
     cbar.set_label(r"$N_{\mathrm{gal}}$")
 
     fig.savefig(
-        outpath,
+        outpath + "Obs_UV_size_lum_hex.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+
+def plot_size_flux_comp(filepath, filter, outpath):
+    """
+    Plot the size-luminosity relation.
+
+    Args:
+        filepath (str): The path to the file to plot.
+    """
+    # Open the file and extract the sizes and luminosities
+    with h5py.File(filepath, "r") as hdf:
+        # Get the redshift (it's the same for all galaxies)
+        redshift = hdf["Galaxies/Redshift"][0]
+        obs_sizes = hdf["Galaxies/Stars/PixelHalfLightRadii/stellar_total/JWST"][
+            filter
+        ][...]
+        int_sizes = hdf["Galaxies/Stars/PixelHalfLightRadii/reprocessed/JWST"][filter][
+            ...
+        ]
+        obs_flux = hdf["Galaxies/Stars/Photometry/Fluxes/stellar_total/JWST/"][filter][
+            ...
+        ]
+        int_flux = hdf["Galaxies/Stars/Photometry/Fluxes/reprocessed/JWST/"][filter][
+            ...
+        ]
+
+    # Create the plot
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(111)
+
+    # Add a grid and make sure its always at the back
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Remove galaxies with no flux
+    mask = np.logical_and(int_flux > 0, int_sizes > 0)
+    int_sizes = int_sizes[mask]
+    obs_sizes = obs_sizes[mask]
+    int_flux = int_flux[mask]
+    obs_flux = obs_flux[mask]
+
+    # Fit the size-luminosity relations
+    obs_popt, obs_pcov = curve_fit(
+        size_lumin_fit,
+        obs_flux,
+        obs_sizes,
+        p0=[1, 0.5],
+    )
+    int_popt, int_pcov = curve_fit(
+        size_lumin_fit,
+        int_flux,
+        int_sizes,
+        p0=[1, 0.5],
+    )
+
+    ax.text(
+        0.95,
+        0.05,
+        f"$z={redshift:.1f}$",
+        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
+        transform=ax.transAxes,
+        horizontalalignment="right",
+        fontsize=8,
+    )
+
+    # Set the axis labels
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{nJy}]$")
+    ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
+
+    fig.savefig(
+        outpath + f"Obs_{filter.split('.')[-1]}_size_lum_comp.png",
         bbox_inches="tight",
         dpi=300,
     )
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(
+        description="Plot galaxy images in different filters."
+    )
     parser.add_argument(
-        "--filepath",
+        "--run-name",
         type=str,
-        help="The path to the file to plot.",
+        help="The name of the simulation (the directory in run-dir).",
+        default="L025_m7",
+    )
+    parser.add_argument(
+        "--variant",
+        type=str,
+        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
+        default="THERMAL_AGN_m7",
+    )
+    parser.add_argument(
+        "--snap",
+        type=int,
+        help="The snapshot number to plot.",
+        default=0,
+    )
+    parser.add_argument(
+        "--part-limit",
+        type=int,
+        help="The lower mass limit for galaxies.",
+        default=100,
+    )
+    parser.add_argument(
+        "--fof-only",
+        action="store_true",
+        help="If true, only load the FOF groups.",
+    )
+    parser.add_argument(
+        "--grid",
+        type=str,
+        help="The path to the grid.",
     )
     parser.add_argument(
         "--filter",
@@ -203,19 +328,43 @@ if __name__ == "__main__":
         default="../data",
         help="The path to the filter data.",
     )
-    parser.add_argument(
-        "--outpath",
-        type=str,
-        help="The path to save the plot.",
-    )
+
     args = parser.parse_args()
 
-    # Check if the file exists
-    if not os.path.exists(args.filepath):
-        raise FileNotFoundError(f"{args.filepath} does not exist.")
+    # Define input and output paths
+    run_name = args.run_name
+    variant = args.variant
+    part_limit = args.part_limit
+    fof_only = args.fof_only
+    grid_name = args.grid
+    grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
+    snap = str(args.snap).zfill(4)
+    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{args.snap:04d}.hdf5"
+    outpath = f"../plots/{run_name}/{variant}/images/"
+
+    # Define the output path, for special particle limits we all include that
+    # info
+    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
+    outpath = f"../plots/{run_name}/{variant}/"
+    if part_limit != 100:
+        path += f"_part_limit_{part_limit}"
+        outpath += f"/part_limit_{part_limit}"
+    if fof_only:
+        path += "_FOFGroups"
+        outpath += "/FOFGroups"
+    path += ".hdf5"
+    outpath += "/images/"
+
+    # Check if the input file exists
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Input file {path} does not exist.")
+
+    # Create the plot directory if it doesn't exist
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
 
     # Plot the size-luminosity relation
     if args.filter is not None:
-        plot_size_flux_hex(args.filepath, args.filter, args.outpath)
+        plot_size_flux_hex(path, args.filter, outpath)
     else:
-        plot_size_lum_hex_uv(args.filepath, args.filtpath, args.outpath)
+        plot_size_lum_hex_uv(path, args.filtpath, outpath)

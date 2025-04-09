@@ -188,7 +188,7 @@ if __name__ == "__main__":
         ax=ax,
         label="L200_m7/Thermal",
         lstyle="-",
-        color="r",
+        color="g",
         mass_lim=1e9,
     )
     fig, ax = plot_size_evolution(
@@ -197,7 +197,7 @@ if __name__ == "__main__":
         ax=ax,
         label="L200_m7/Hybrid",
         lstyle="-",
-        color="b",
+        color="cyan",
         mass_lim=1e9,
         outpath=outpath,
     )

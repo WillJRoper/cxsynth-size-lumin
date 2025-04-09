@@ -6,6 +6,7 @@ import os
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LogNorm
 from scipy.stats import binned_statistic
 from unyt import Mpc
 
@@ -50,6 +51,7 @@ def plot_size_mass_hex(filepath, outpath):
         xscale="log",
         yscale="log",
         linewidths=0.1,
+        norm=LogNorm(),
     )
 
     ax.text(

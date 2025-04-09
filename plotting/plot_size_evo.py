@@ -15,7 +15,7 @@ def plot_size_evolution(
     label=None,
     lstyle="-",
     color="r",
-    outpath="/",
+    outpath=None,
 ):
     """
     Plot the size evolution of galaxies.

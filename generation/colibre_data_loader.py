@@ -100,7 +100,10 @@ def _set_up_swift_galaxy(
             float(hf["SWIFT/Parameters"].attrs["Gravity:max_physical_baryon_softening"])
             * Mpc
         )
-        soft = np.min([comoving_soft / (1 + redshift[0]), max_phys_soft]) * Mpc
+        if redshift > 1.7:
+            soft = comoving_soft / (1 + redshift)
+        else:
+            soft = max_phys_soft
 
     # If we have an empty chunk, we can't do anything
     if len(chunk_inds) == 0:

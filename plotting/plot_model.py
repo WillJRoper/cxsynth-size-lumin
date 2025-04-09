@@ -2,9 +2,10 @@
 
 import warnings
 
-from my_emission_models import LOSStellarEmission
 from synthesizer.grid import Grid
 from unyt import Msun, angstrom
+
+from ..generation.my_emission_models import LOSStellarEmission
 
 # Silence warnings (only because we now what we're doing)
 warnings.filterwarnings("ignore")

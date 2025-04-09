@@ -18,7 +18,6 @@ def plot_size_evolution(
     color="r",
     outpath=None,
     mass_lim=None,
-    marker="o",
 ):
     """
     Plot the size evolution of galaxies.
@@ -102,8 +101,7 @@ def plot_size_evolution(
     #     color=color,
     # )
 
-    # Plot the median with errors bars giving the 16th and 84th percentiles
-    # of the distribution
+    # Compute the median and error bars
     median_xs = np.arange(
         -0.5,
         np.max(redshifts) + 1.5,
@@ -127,16 +125,23 @@ def plot_size_evolution(
         statistic=lambda x: np.percentile(x, 84),
         bins=median_xs,
     )[0]
-    ax.errorbar(
+
+    # Plot the median
+    ax.plot(
         (median_xs[:-1] + median_xs[1:]) / 2,
         median_ys,
-        yerr=[median_ys - low_err, high_err - median_ys],
-        markersize=3,
         label=label if label is not None else "Median",
-        capsize=3,
         linestyle=lstyle,
         color=color,
-        marker=marker,
+    )
+
+    # Plot the error bars as shaded regions
+    ax.fill_between(
+        (median_xs[:-1] + median_xs[1:]) / 2,
+        low_err,
+        high_err,
+        color=color,
+        alpha=0.2,
     )
 
     # If we are saving it go ahead and save it

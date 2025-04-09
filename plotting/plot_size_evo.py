@@ -127,8 +127,8 @@ if __name__ == "__main__":
     )
     fig, ax = plot_size_evolution(
         filepath="../data/L200_m7/THERMAL_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
-        fig=None,
-        ax=None,
+        fig=fig,
+        ax=ax,
         label="L200_m7/Thermal",
         lstyle="--",
         color="r",

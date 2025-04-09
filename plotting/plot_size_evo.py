@@ -124,7 +124,7 @@ def plot_size_evolution(
     # If we are saving it go ahead and save it
     if save:
         ax.legend(
-            loc="upper left",
+            loc="best",
             fontsize=8,
         )
 
@@ -164,7 +164,7 @@ if __name__ == "__main__":
         fig=fig,
         ax=ax,
         label="L200_m7/Thermal",
-        lstyle="--",
+        lstyle="-",
         color="r",
         mass_lim=1e9,
     )
@@ -173,7 +173,7 @@ if __name__ == "__main__":
         fig=fig,
         ax=ax,
         label="L200_m7/Hybrid",
-        lstyle="--",
+        lstyle="-",
         color="b",
         mass_lim=1e9,
         outpath=outpath,

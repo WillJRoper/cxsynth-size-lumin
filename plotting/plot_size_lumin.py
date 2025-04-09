@@ -204,7 +204,7 @@ def plot_size_lum_hex_uv_obs(filepath, filtpath, outpath):
     )
 
 
-def plot_size_lum_hex_uv(filepath, outpath):
+def plot_size_lum_hex_uv(filepath, outpath, xlim=None, ylim=None):
     """
     Plot the size-luminosity relation.
 
@@ -266,6 +266,12 @@ def plot_size_lum_hex_uv(filepath, outpath):
     # Make and label the colorbar
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label(r"$N_{\mathrm{gal}}$")
+
+    # Set the axis limits
+    if xlim is not None:
+        ax.set_xlim(xlim, None)
+    if ylim is not None:
+        ax.set_ylim(ylim, None)
 
     fig.savefig(
         outpath + "UV_size_lum_hex.png",
@@ -400,6 +406,18 @@ if __name__ == "__main__":
         default="../data",
         help="The path to the filter data.",
     )
+    parser.add_argument(
+        "--xlim",
+        type=float,
+        default=None,
+        help="The x-axis lower limit.",
+    )
+    parser.add_argument(
+        "--ylim",
+        type=float,
+        default=None,
+        help="The y-axis lower limit.",
+    )
 
     args = parser.parse_args()
 
@@ -441,4 +459,4 @@ if __name__ == "__main__":
     #     plot_size_flux_comp(path, args.filter, outpath)
     # else:
     #     plot_size_lum_hex_uv(path, args.filtpath, outpath)
-    plot_size_lum_hex_uv(path, outpath)
+    plot_size_lum_hex_uv(path, outpath, xlim=args.xlim, ylim=args.ylim)

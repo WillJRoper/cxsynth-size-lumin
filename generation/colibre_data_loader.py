@@ -98,6 +98,7 @@ def _set_up_swift_galaxy(
         max_phys_soft = hf["SWIFT/Parameters"].attrs[
             "Gravity:max_physical_baryon_softening"
         ]
+        print(comoving_soft, max_phys_soft)
         soft = np.max([comoving_soft, max_phys_soft])
 
     # If we have an empty chunk, we can't do anything

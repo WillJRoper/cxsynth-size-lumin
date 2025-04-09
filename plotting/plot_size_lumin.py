@@ -6,6 +6,7 @@ import os
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LogNorm
 from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 from synthesizer.instruments import FilterCollection
@@ -121,7 +122,7 @@ def plot_size_flux_hex(filepath, filter, outpath):
     )
 
 
-def plot_size_lum_hex_uv(filepath, filtpath, outpath):
+def plot_size_lum_hex_uv_obs(filepath, filtpath, outpath):
     """
     Plot the size-luminosity relation.
 
@@ -198,6 +199,74 @@ def plot_size_lum_hex_uv(filepath, filtpath, outpath):
 
     fig.savefig(
         outpath + "Obs_UV_size_lum_hex.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+
+def plot_size_lum_hex_uv(filepath, outpath):
+    """
+    Plot the size-luminosity relation.
+
+    Args:
+        filepath (str): The path to the file to plot.
+    """
+    # Open the file and extract the sizes and luminosities
+    with h5py.File(filepath, "r") as hdf:
+        # Get the redshift (it's the same for all galaxies)
+        redshift = hdf["Galaxies/Redshift"][0]
+
+        print("Plotting the size-luminosity relation at z=", redshift)
+
+        sizes = hdf["Galaxies/Stars/PixelHalfLightRadii/stellar_total/UV1500"][...]
+        flux = hdf["Galaxies/Stars/Photometry/Luminosities/stellar_total/UV1500"][...]
+
+    # Create the plot
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(111)
+
+    # Add a grid and make sure its always at the back
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Remove galaxies with no flux
+    mask = np.logical_and(flux > 0, sizes > 0)
+    flux = flux[mask]
+    sizes = sizes[mask]
+
+    # Plot the hexbin
+    im = ax.hexbin(
+        flux,
+        sizes,
+        gridsize=30,
+        mincnt=1,
+        cmap="viridis",
+        xscale="log",
+        yscale="log",
+        linewidths=0.1,
+        norm=LogNorm(),
+    )
+
+    ax.text(
+        0.95,
+        0.05,
+        f"$z={redshift:1f}$",
+        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
+        transform=ax.transAxes,
+        horizontalalignment="right",
+        fontsize=8,
+    )
+
+    # Set the axis labels
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{nJy}]$")
+    ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
+
+    # Make and label the colorbar
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(r"$N_{\mathrm{gal}}$")
+
+    fig.savefig(
+        outpath + "UV_size_lum_hex.png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -364,8 +433,9 @@ if __name__ == "__main__":
         os.makedirs(outpath)
 
     # Plot the size-luminosity relation
-    if args.filter is not None:
-        plot_size_flux_hex(path, args.filter, outpath)
-        plot_size_flux_comp(path, args.filter, outpath)
-    else:
-        plot_size_lum_hex_uv(path, args.filtpath, outpath)
+    # if args.filter is not None:
+    #     plot_size_flux_hex(path, args.filter, outpath)
+    #     plot_size_flux_comp(path, args.filter, outpath)
+    # else:
+    #     plot_size_lum_hex_uv(path, args.filtpath, outpath)
+    plot_size_lum_hex_uv(path, outpath)

@@ -443,7 +443,6 @@ if __name__ == "__main__":
         path += "_FOFGroups"
         outpath += "/FOFGroups"
     path += ".hdf5"
-    outpath += "/images/"
 
     # Check if the input file exists
     if not os.path.exists(path):

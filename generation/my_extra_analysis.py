@@ -1,6 +1,7 @@
 """An module containing extra analysis functions for the pipeline."""
 
 import numpy as np
+from scipy.interpolate import interp1d
 from synthesizer.conversions import angular_to_spatial_at_z
 from unyt import Msun, angstrom, arcsecond, unyt_array, yr
 
@@ -52,6 +53,61 @@ def get_gas_3d_velocity_dispersion(gal):
     )
 
 
+def _pixel_hlr(img, pix_area):
+    """
+    Calculate the half-light radius of an image using the pixel technique.
+
+    Args:
+        img (Image): The image to calculate the half-light radius for.
+        pix_area (float): The area of a pixel in the image.
+
+    Returns:
+        float: The half-light radius in kpc.
+    """
+    # Sort pixel values from brightest to faintest
+    pixels = np.sort(img.arr.flatten())[::-1]
+
+    # Calculate the cumulative sum of the pixels
+    cumsum = np.cumsum(pixels)
+    half_light = cumsum[-1] / 2
+
+    # Create an array of pixel areas
+    pixel_areas = np.arange(len(pixels)) * pix_area
+
+    # Find the pixel that corresponds to the half-light radius
+    hlr_ind = np.argmin(np.abs(cumsum - half_light))
+
+    # Interpolate around this pixel to get a more accurate value
+    low_ind = max(0, hlr_ind - 1)
+    high_ind = min(len(pixels) - 1, hlr_ind + 1)
+    if low_ind == 0:
+        y = np.array(
+            [pixel_areas[hlr_ind], pixel_areas[high_ind], pixel_areas[high_ind + 1]]
+        )
+        x = np.array([cumsum[hlr_ind], cumsum[high_ind], cumsum[high_ind + 1]])
+    elif high_ind == len(pixels) - 1:
+        y = np.array(
+            [pixel_areas[low_ind], pixel_areas[hlr_ind], pixel_areas[low_ind - 1]]
+        )
+        x = np.array([cumsum[low_ind], cumsum[hlr_ind], cumsum[low_ind - 1]])
+    else:
+        y = np.array(
+            [pixel_areas[low_ind], pixel_areas[hlr_ind], pixel_areas[high_ind]]
+        )
+        x = np.array([cumsum[low_ind], cumsum[hlr_ind], cumsum[high_ind]])
+
+    # Interpolate to find the half-light radius
+    interp_func = interp1d(x, y, kind="linear", fill_value="extrapolate")
+
+    # Get the area of pixels containing half the light
+    hlr_area = interp_func(half_light)
+
+    # Get the half-light radius
+    hlr = np.sqrt(hlr_area / np.pi)
+
+    return hlr
+
+
 def get_pixel_based_hlr(obj):
     """
     Get the half-light radius of the galaxy using the pixel technique.
@@ -75,20 +131,8 @@ def get_pixel_based_hlr(obj):
                 img_arr = img.arr
                 pix_area = img._resolution * img._resolution
 
-                # Sort pixel values from brightest to faintest
-                pixels = np.sort(img_arr.flatten())[::-1]
-
-                # Calculate the cumulative sum of the pixels
-                cumsum = np.cumsum(pixels)
-
-                # Find the pixel that corresponds to the half-light radius
-                hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
-
-                # Get the area of pixels containing half the light
-                hlr_area = hlr_ind * pix_area
-
                 # Get the half-light radius
-                hlr = np.sqrt(hlr_area / np.pi)
+                hlr = _pixel_hlr(img_arr, pix_area)
 
                 # Store the results
                 results.setdefault(f"Flux/{spec_type}", {})[filt] = (
@@ -106,20 +150,8 @@ def get_pixel_based_hlr(obj):
                 img_arr = img.arr
                 pix_area = img._resolution * img._resolution
 
-                # Sort pixel values from brightest to faintest
-                pixels = np.sort(img_arr.flatten())[::-1]
-
-                # Calculate the cumulative sum of the pixels
-                cumsum = np.cumsum(pixels)
-
-                # Find the pixel that corresponds to the half-light radius
-                hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
-
-                # Get the area of pixels containing half the light
-                hlr_area = hlr_ind * pix_area
-
                 # Get the half-light radius
-                hlr = np.sqrt(hlr_area / np.pi)
+                hlr = _pixel_hlr(img_arr, pix_area)
 
                 # Store the results
                 results.setdefault(f"Luminosity/{spec_type}", {})[filt] = (

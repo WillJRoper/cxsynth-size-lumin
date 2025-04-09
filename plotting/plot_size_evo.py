@@ -1,25 +1,35 @@
 """A script for plotting the size evolution of galaxies."""
 
-import argparse
 import glob
-import os
 
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.stats import binned_statistic
 
 
-def plot_size_evolution(filepath):
+def plot_size_evolution(
+    filepath,
+    fig=None,
+    ax=None,
+    label=None,
+    lstyle="-",
+    color="r",
+    outpath="/",
+):
     """
     Plot the size evolution of galaxies.
 
     This will read all snapshots in the input directory and plot their size
     evolution.
     """
+    # Are we writing?
+    save = False
+    if outpath is not None:
+        save = True
+
     # Get all the files in the directory
-    files = glob.glob(filepath + "/Synth*.hdf5")
+    files = glob.glob(filepath)
 
     # We need to make sure we only have the combined files, luckily these all
     # have 1 extra element delineated by an underscore so we can use that to
@@ -54,107 +64,81 @@ def plot_size_evolution(filepath):
     fit_xs = np.linspace(min(redshifts), max(redshifts), 100)
     fit_ys = popt[0] * (1 + fit_xs) ** popt[1]
 
-    # Compute the median in each redshift bin and the standard deviation in
-    # each bin so we can plot the error bars
-    median_xs = np.arange(
-        -0.5,
-        np.max(redshifts) + 1.5,  # We want to include the last bin
-        1.0,
-    )
-    median_ys = binned_statistic(
-        redshifts,
-        sizes,
-        statistic="median",
-        bins=median_xs,
-    )[0]
-
-    median_ys_std = binned_statistic(
-        redshifts,
-        sizes,
-        statistic="std",
-        bins=median_xs,
-    )[0]
-
+    print(f"Fitting parameters for {label}")
     print(f"Fitted parameters: {popt}")
     print(f"Fitted covariance: {pcovr}")
 
     # Plot the data
-    fig, ax = plt.subplots(figsize=(3.5, 3.5))
+    if fig is None and ax is None:
+        fig, ax = plt.subplots(figsize=(3.5, 3.5))
 
-    # Add a grid and make sure its always at the back
-    ax.grid(True)
-    ax.set_axisbelow(True)
+        # Add a grid and make sure its always at the back
+        ax.grid(True)
+        ax.set_axisbelow(True)
 
-    # Plot the binned data
-    ax.plot(
-        (median_xs[:-1] + median_xs[1:]) / 2,
-        median_ys,
-        color="k",
-        linestyle="-",
-        label="Median",
-    )
-    ax.fill_between(
-        (median_xs[:-1] + median_xs[1:]) / 2,
-        median_ys - median_ys_std,
-        median_ys + median_ys_std,
-        color="b",
-        alpha=0.2,
-    )
+        # Set the axis labels
+        ax.set_xlabel(r"$z$")
+        ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
 
     # Plot the fit
     ax.plot(
         fit_xs,
         fit_ys,
-        color="r",
-        linestyle="--",
-        label="Fit",
+        label=label if label is not None else "Fit",
+        linestyle=lstyle,
+        color=color,
     )
 
-    # Set the axis labels
-    ax.set_xlabel(r"$z$")
-    ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
+    # If we are saving it go ahead and save it
+    if save:
+        ax.legend(
+            loc="upper left",
+            fontsize=8,
+        )
 
-    ax.legend(
-        loc="upper left",
-        fontsize=8,
-    )
+        fig.savefig(
+            f"{outpath}size_evolution.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
 
-    fig.savefig(
-        f"{outpath}/size_evolution.png",
-        dpi=300,
-        bbox_inches="tight",
-    )
+    return fig, ax
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--run-name",
-        type=str,
-        help="The name of the simulation (the directory in run-dir).",
-        default="L025_m7",
-    )
-    parser.add_argument(
-        "--variant",
-        type=str,
-        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
-        default="THERMAL_AGN_m7",
-    )
-    args = parser.parse_args()
-
-    # Define input and output paths
-    run_name = args.run_name
-    variant = args.variant
-    path = f"../data/{run_name}/{variant}/"
-    outpath = f"../plots/{run_name}/{variant}/"
-
-    # Check if the file exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"{path} does not exist.")
-
-    # Create the output directory if it doesn't exist
-    if not os.path.exists(outpath):
-        os.makedirs(outpath)
+    outpath = "../plots/thermal_vs_hybrid_size_evo.png"
 
     # Plot the size evolution
-    plot_size_evolution(path)
+    fig, ax = plot_size_evolution(
+        filepath="../data/L050_m6/THERMAL_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
+        fig=None,
+        ax=None,
+        label="L050_m6/Thermal",
+        lstyle="--",
+        color="r",
+    )
+    fig, ax = plot_size_evolution(
+        filepath="../data/L050_m6/HYBRID_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
+        fig=fig,
+        ax=ax,
+        label="L050_m6/Hybrid",
+        lstyle="--",
+        color="b",
+    )
+    fig, ax = plot_size_evolution(
+        filepath="../data/L200_m7/THERMAL_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
+        fig=None,
+        ax=None,
+        label="L200_m7/Thermal",
+        lstyle="--",
+        color="r",
+    )
+    fig, ax = plot_size_evolution(
+        filepath="../data/L200_m7/HYBRID_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
+        fig=fig,
+        ax=ax,
+        label="L200_m7/Hybrid",
+        lstyle="--",
+        color="b",
+        outpath=outpath,
+    )

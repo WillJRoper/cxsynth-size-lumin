@@ -218,7 +218,9 @@ def plot_size_lum_hex_uv(filepath, outpath):
 
         print("Plotting the size-luminosity relation at z=", redshift)
 
-        sizes = hdf["Galaxies/Stars/PixelHalfLightRadii/stellar_total/UV1500"][...]
+        sizes = hdf[
+            "Galaxies/Stars/PixelHalfLightRadii/stellar_total/Luminosity/UV1500"
+        ][...]
         flux = hdf["Galaxies/Stars/Photometry/Luminosities/stellar_total/UV1500"][...]
 
     # Create the plot

@@ -194,14 +194,11 @@ def _get_galaxies(
     # Initialise a container for the galaxies we are about to load
     gals = np.empty(ngals, dtype=object)
 
-    # Get centres in physical coordinates
-    centre = soap.centre.to_physical().to("Mpc")
-
     # swiftgalaxy picks its own efficient iteration order
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
-        cent = np.average(star_coords, axis=0, weights=swift_gal.stars.masses)
+        cent = swift_gal.halo_catalogue.centre.to_physical().to("Mpc")
 
         # Derive the radii for star and gas particles
         star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")

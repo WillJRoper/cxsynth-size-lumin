@@ -9,6 +9,11 @@ from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 
 
+def size_evolution_func(z, r0, m):
+    """The function to fit the size evolution."""
+    return r0 * (1 + z) ** m
+
+
 def plot_size_evolution(
     filepath,
     fig=None,
@@ -160,6 +165,50 @@ def plot_size_evolution(
     return fig, ax
 
 
+def plot_size_evolution_comps(fig, ax, outpath=None):
+    """Plot the size evolution from other studies."""
+    # Are we writing?
+    save = False
+    if outpath is not None:
+        save = True
+
+    # Plot FLARES IV
+    r0_flares = 21.98
+    m_flares = -1.59
+    flares_zs = np.linspace(5, 12, 100)
+    ax.plot(
+        flares_zs,
+        size_evolution_func(flares_zs, r0_flares, m_flares),
+        label="FLARES IV (Roper+22)",
+        linestyle="dotted",
+    )
+
+    # Plot Omerod
+    r0_omerod = 4.5
+    m_omerod = -0.71
+    omerod_zs = np.linspace(0, 8, 100)
+    ax.plot(
+        omerod_zs,
+        size_evolution_func(omerod_zs, r0_omerod, m_omerod),
+        label="Ormerod+2023",
+        linestyle="dotted",
+    )
+    # If we are saving it go ahead and save it
+    if save:
+        ax.legend(
+            loc="best",
+            fontsize=8,
+        )
+
+        fig.savefig(
+            f"{outpath}size_evolution.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+    return fig, ax
+
+
 if __name__ == "__main__":
     outpath = "../plots/thermal_vs_hybrid_size_evo.png"
 
@@ -199,5 +248,9 @@ if __name__ == "__main__":
         lstyle="-",
         color="cyan",
         mass_lim=1e9,
+    )
+    fig, ax = plot_size_evolution_comps(
+        fig=fig,
+        ax=ax,
         outpath=outpath,
     )

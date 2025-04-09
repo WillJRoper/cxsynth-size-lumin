@@ -185,7 +185,7 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
         )
         fig, ax, _ = img_coll.plot_rgb_image(
             show=False,
-            vmax=np.percentile(img_coll.rgb_img, 99.9),
+            vmax=np.percentile(img_coll.rgb_img, 99.999),
             vmin=np.percentile(img_coll.rgb_img, 16),
         )
 

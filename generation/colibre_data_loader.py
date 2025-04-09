@@ -101,7 +101,7 @@ def _set_up_swift_galaxy(
             * Mpc
         )
         print([comoving_soft / (1 + redshift[0]), max_phys_soft])
-        soft = np.max([comoving_soft / (1 + redshift[0]), max_phys_soft])
+        soft = np.max([comoving_soft / (1 + redshift[0]), max_phys_soft]) * Mpc
 
     # If we have an empty chunk, we can't do anything
     if len(chunk_inds) == 0:

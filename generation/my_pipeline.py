@@ -338,10 +338,16 @@ if __name__ == "__main__":
         print("No galaxies found.")
         comm.Abort()
 
+    # Instruments need to be loaded
+    insts = InstrumentCollection(filepath=inst_path)
+
+    # Set the resolution of the UV1500 insturment
+    insts["UV1500"].resolution = galaxies[0].physical_softening
+
     # Set up the pipeline
     pipeline = Pipeline(
         emission_model=get_emission_model(grid_name, grid_dir),
-        instruments=InstrumentCollection(filepath=inst_path),
+        instruments=insts,
         nthreads=nthreads,
         comm=comm,
     )

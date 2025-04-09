@@ -362,20 +362,20 @@ if __name__ == "__main__":
             ),
             f"Stars/MassRadii/{frac_key}",
         )
-    #     pipeline.add_analysis_func(
-    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
-    #             "masses",
-    #             frac=frac,
-    #         ),
-    #         f"Gas/MassRadii/{frac_key}",
-    #     )
-    #     pipeline.add_analysis_func(
-    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
-    #             "dust_masses",
-    #             frac=frac,
-    #         ),
-    #         f"Gas/DustMassRadii/{frac_key}",
-    #     )
+        #     pipeline.add_analysis_func(
+        #         lambda gal, frac=frac: gal.gas.get_attr_radius(
+        #             "masses",
+        #             frac=frac,
+        #         ),
+        #         f"Gas/MassRadii/{frac_key}",
+        #     )
+        pipeline.add_analysis_func(
+            lambda gal, frac=frac: gal.gas.get_attr_radius(
+                "dust_masses",
+                frac=frac,
+            ),
+            f"Gas/DustMassRadii/{frac_key}",
+        )
     # pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
     pipeline.add_analysis_func(
         lambda gal: get_pixel_based_hlr(gal.stars),

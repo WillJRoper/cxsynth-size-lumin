@@ -59,6 +59,7 @@ def plot_size_evolution(
     redshifts = np.array(redshifts)
     sizes = np.array(sizes)
     masses = np.array(masses)
+    print(masses.size)
 
     # Apply the mass limit if it is set
     if mass_lim is not None:
@@ -66,6 +67,8 @@ def plot_size_evolution(
         sizes = sizes[mask]
         redshifts = redshifts[mask]
         masses = masses[mask]
+
+    print(masses.size)
 
     # Convert the sizes to kpc
     sizes = sizes * 1e3

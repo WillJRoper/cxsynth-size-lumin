@@ -386,6 +386,7 @@ if __name__ == "__main__":
         "--grid",
         type=str,
         help="The path to the grid.",
+        default="test_gird.hdf5",
     )
     parser.add_argument(
         "--filter",

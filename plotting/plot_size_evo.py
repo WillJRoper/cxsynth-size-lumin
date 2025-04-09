@@ -121,6 +121,30 @@ def plot_size_evolution(
         color=color,
     )
 
+    # Add points with errors bars giving the 16th and 84th percentiles
+    # of the distribution
+    low_err = binned_statistic(
+        redshifts,
+        sizes,
+        statistic=lambda x: np.percentile(x, 16),
+        bins=median_xs,
+    )[0]
+    high_err = binned_statistic(
+        redshifts,
+        sizes,
+        statistic=lambda x: np.percentile(x, 84),
+        bins=median_xs,
+    )[0]
+    ax.errorbar(
+        (median_xs[:-1] + median_xs[1:]) / 2,
+        median_ys,
+        yerr=[median_ys - low_err, high_err - median_ys],
+        fmt="o",
+        color=color,
+        markersize=3,
+        label=label if label is not None else "Median",
+    )
+
     # If we are saving it go ahead and save it
     if save:
         ax.legend(

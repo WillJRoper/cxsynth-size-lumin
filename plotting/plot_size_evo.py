@@ -6,6 +6,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.stats import binned_statistic
 
 
 def plot_size_evolution(
@@ -59,7 +60,6 @@ def plot_size_evolution(
     redshifts = np.array(redshifts)
     sizes = np.array(sizes)
     masses = np.array(masses)
-    print(masses.size)
 
     # Apply the mass limit if it is set
     if mass_lim is not None:
@@ -67,8 +67,6 @@ def plot_size_evolution(
         sizes = sizes[mask]
         redshifts = redshifts[mask]
         masses = masses[mask]
-
-    print(masses.size)
 
     # Convert the sizes to kpc
     sizes = sizes * 1e3
@@ -95,10 +93,30 @@ def plot_size_evolution(
         ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
 
     # Plot the fit
+    # ax.plot(
+    #     fit_xs,
+    #     fit_ys,
+    #     label=label if label is not None else "Fit",
+    #     linestyle=lstyle,
+    #     color=color,
+    # )
+
+    # Plot the median
+    median_xs = np.arange(
+        -0.5,
+        np.max(redshifts) + 1.5,
+        1,
+    )
+    median_ys = binned_statistic(
+        redshifts,
+        sizes,
+        statistic="median",
+        bins=median_xs,
+    )[0]
     ax.plot(
-        fit_xs,
-        fit_ys,
-        label=label if label is not None else "Fit",
+        (median_xs[:-1] + median_xs[1:]) / 2,
+        median_ys,
+        label=label if label is not None else "Median",
         linestyle=lstyle,
         color=color,
     )

@@ -128,11 +128,10 @@ def get_pixel_based_hlr(obj):
             for filt, img in imgs.items():
                 # Get the image
                 img = obj.images_psf_fnu[inst_name][spec_type][filt]
-                img_arr = img.arr
                 pix_area = img._resolution * img._resolution
 
                 # Get the half-light radius
-                hlr = _pixel_hlr(img_arr, pix_area)
+                hlr = _pixel_hlr(img, pix_area)
 
                 # Store the results
                 results.setdefault(f"Flux/{spec_type}", {})[filt] = (
@@ -147,11 +146,10 @@ def get_pixel_based_hlr(obj):
             for filt, img in imgs.items():
                 # Get the image
                 img = obj.images_lnu[inst_name][spec_type][filt]
-                img_arr = img.arr
                 pix_area = img._resolution * img._resolution
 
                 # Get the half-light radius
-                hlr = _pixel_hlr(img_arr, pix_area)
+                hlr = _pixel_hlr(img, pix_area)
 
                 # Store the results
                 results.setdefault(f"Luminosity/{spec_type}", {})[filt] = (

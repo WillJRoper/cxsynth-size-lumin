@@ -252,7 +252,7 @@ def plot_size_lum_hex_uv(filepath, outpath, xlim=None, ylim=None):
     ax.text(
         0.95,
         0.05,
-        f"$z={redshift:1f}$",
+        f"$z={redshift:.1f}$",
         bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
         transform=ax.transAxes,
         horizontalalignment="right",

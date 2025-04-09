@@ -400,7 +400,7 @@ if __name__ == "__main__":
     pipeline.get_photometry_fluxes(cosmo=cosmo)
 
     pipeline.get_images_luminosity(
-        fov=61 * kpc if not fof_only else 250 * kpc,
+        fov=61 * kpc if not fof_only else 1000 * kpc,
         kernel=kernel_data,
         spectra_type=(
             "reprocessed",
@@ -410,7 +410,7 @@ if __name__ == "__main__":
         write=False if part_limit < 1000 else True,
     )
     pipeline.get_images_flux_psfs(
-        fov=61 * kpc if not fof_only else 250 * kpc,
+        fov=61 * kpc if not fof_only else 1000 * kpc,
         kernel=kernel_data,
         spectra_type=(
             "reprocessed",

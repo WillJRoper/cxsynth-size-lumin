@@ -260,7 +260,7 @@ def plot_size_lum_hex_uv(filepath, outpath, xlim=None, ylim=None):
     )
 
     # Set the axis labels
-    ax.set_xlabel(r"$L_{1500} / [\mathrm{nJy}]$")
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
 
     # Make and label the colorbar

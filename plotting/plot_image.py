@@ -126,76 +126,84 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
         # If the gal_ind is None we just want to find the brightest galaxy
         # and plot its image in each filter
         if gal_ind is None:
-            gal_ind = np.argmax(hdf[phot_key][:])
+            gal_inds = np.arange(hdf[phot_key][:].size)
+        else:
+            gal_inds = [
+                gal_ind,
+            ]
 
-        # Read each image for this galaxy into the dictionary
-        for key in hdf[img_key].keys():
-            img_dict[key] = Image(
-                resolution=1 * kpc,
-                fov=100 * kpc,
-                img=hdf[img_key][key][gal_ind, :, :],
-            )
+    # Loop over the galaxies
+    for gal_ind in gal_inds:
+        # Open the HDF5 file
+        with h5py.File(path, "r") as hdf:
+            # Read each image for this galaxy into the dictionary
+            for key in hdf[img_key].keys():
+                img_dict[key] = Image(
+                    resolution=1 * kpc,
+                    fov=100 * kpc,
+                    img=hdf[img_key][key][gal_ind, :, :],
+                )
 
-        # Get the redshift of this galaxy
-        redshift = hdf["Galaxies/Redshift"][gal_ind]
+            # Get the redshift of this galaxy
+            redshift = hdf["Galaxies/Redshift"][gal_ind]
 
-    # Create the image collection
-    img_coll = ImageCollection(
-        resolution=1 * kpc,
-        fov=100 * kpc,
-        imgs=img_dict,
-    )
+        # Create the image collection
+        img_coll = ImageCollection(
+            resolution=1 * kpc,
+            fov=100 * kpc,
+            imgs=img_dict,
+        )
 
-    # Correct the shape
-    img_coll.npix = (
-        img_coll.imgs["NIRCam.F200W"].arr.shape[0],
-        img_coll.imgs["NIRCam.F200W"].arr.shape[1],
-    )
+        # Correct the shape
+        img_coll.npix = (
+            img_coll.imgs["NIRCam.F200W"].arr.shape[0],
+            img_coll.imgs["NIRCam.F200W"].arr.shape[1],
+        )
 
-    # Compute the 99.9 percentile of each image and take the maximum as
-    # the normalization factor
-    vmax = np.max(
-        [np.percentile(img_coll.imgs[key].arr, 99.9) for key in img_dict.keys()],
-    )
-    vmin = 0.0
+        # Compute the 99.9 percentile of each image and take the maximum as
+        # the normalization factor
+        vmax = np.max(
+            [np.percentile(img_coll.imgs[key].arr, 99.9) for key in img_dict.keys()],
+        )
+        vmin = 0.0
 
-    print(f"Max value: {vmax}")
-    print(f"Min value: {vmin}")
-    print(f"Redshift: {redshift}/Snap: {snap}")
-    print(
-        f"Making Galaxy {gal_ind} from"
-        f" {run_name}/{variant} at z={redshift:.2f} (snap {snap})",
-    )
+        print(f"Max value: {vmax}")
+        print(f"Min value: {vmin}")
+        print(f"Redshift: {redshift}/Snap: {snap}")
+        print(
+            f"Making Galaxy {gal_ind} from"
+            f" {run_name}/{variant} at z={redshift:.2f} (snap {snap})",
+        )
 
-    # Plot the images
-    img_coll.make_rgb_image(
-        rgb_filters={
-            "R": ["NIRCam.F444W", "NIRCam.F356W"],
-            "G": ["NIRCam.F277W", "NIRCam.F200W"],
-            "B": ["NIRCam.F115W", "NIRCam.F150W"],
-        }
-    )
-    fig, ax, _ = img_coll.plot_rgb_image(
-        show=False,
-        vmax=np.percentile(img_coll.rgb_img, 99.9),
-        vmin=np.percentile(img_coll.rgb_img, 16),
-    )
+        # Plot the images
+        img_coll.make_rgb_image(
+            rgb_filters={
+                "R": ["NIRCam.F444W", "NIRCam.F356W"],
+                "G": ["NIRCam.F277W", "NIRCam.F200W"],
+                "B": ["NIRCam.F115W", "NIRCam.F150W"],
+            }
+        )
+        fig, ax, _ = img_coll.plot_rgb_image(
+            show=False,
+            vmax=np.percentile(img_coll.rgb_img, 99.9),
+            vmin=np.percentile(img_coll.rgb_img, 16),
+        )
 
-    # Include the redshift in the title
-    fig.suptitle(
-        f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} "
-        f"(snap {snap})",
-        fontsize=5,
-    )
+        # Include the redshift in the title
+        fig.suptitle(
+            f"Galaxy {gal_ind} from {run_name}/{variant} at z={redshift:.2f} "
+            f"(snap {snap})",
+            fontsize=5,
+        )
 
-    fig.savefig(
-        outpath + f"rgb_cutout_{gal_ind}.png",
-        dpi=1000,
-        bbox_inches="tight",
-    )
+        fig.savefig(
+            outpath + f"rgb_cutout_{gal_ind}.png",
+            dpi=1000,
+            bbox_inches="tight",
+        )
 
-    # Close the figure
-    plt.close(fig)
+        # Close the figure
+        plt.close(fig)
 
 
 if __name__ == "__main__":

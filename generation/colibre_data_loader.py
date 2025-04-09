@@ -92,6 +92,13 @@ def _set_up_swift_galaxy(
     with h5py.File(f"{location}/SOAP/halo_properties_{snap}.hdf5") as hf:
         aexp = hf["Cosmology"].attrs["Scale-factor"]
         redshift = hf["Cosmology"].attrs["Redshift"]
+        comoving_soft = hf["SWIFT/Parameters"].attrs[
+            "Gravity:comoving_baryon_softening"
+        ]
+        max_phys_soft = hf["SWIFT/Parameters"].attrs[
+            "Gravity:max_physical_baryon_softening"
+        ]
+        soft = np.max([comoving_soft, max_phys_soft])
 
     # If we have an empty chunk, we can't do anything
     if len(chunk_inds) == 0:
@@ -141,7 +148,7 @@ def _set_up_swift_galaxy(
         auto_recentre=True,
     )
 
-    return soap, sgs, aexp, redshift
+    return soap, sgs, aexp, redshift, soft
 
 
 def _get_galaxies(
@@ -184,7 +191,7 @@ def _get_galaxies(
         return []
 
     # First up, get out I/O helpers and some metadata from SWIFTGalaxy
-    soap, sgs, aexp, redshift = _set_up_swift_galaxy(
+    soap, sgs, aexp, redshift, soft = _set_up_swift_galaxy(
         location,
         snap,
         chunk_inds,
@@ -374,6 +381,7 @@ def _get_galaxies(
             ),
             redshift=redshift[0],
             centre=cent,
+            physical_softening=soft,
         )
 
         gals[gal_ind] = gal

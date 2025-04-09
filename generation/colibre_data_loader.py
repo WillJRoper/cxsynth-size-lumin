@@ -198,17 +198,16 @@ def _get_galaxies(
     for gal_ind, swift_gal in enumerate(sgs):
         # Get the centre
         star_coords = swift_gal.stars.coordinates.to_physical().to("Mpc")
-        cent = swift_gal.halo_catalogue.centre.to_physical().to("Mpc")
-        print(cent, star_coords.min(axis=0), star_coords.max(axis=0))
+        cent = np.array([0.0, 0.0, 0.0], dtype=float) * Mpc
 
         # Derive the radii for star and gas particles
-        star_radii = np.linalg.norm(cent - star_coords, axis=1).to("kpc")
+        star_radii = np.linalg.norm(star_coords, axis=1).to("kpc")
         gas_coords = swift_gal.gas.coordinates.to_physical().to("Mpc")
         if gas_coords.size > 1:
-            gas_radii = np.linalg.norm(cent - gas_coords, axis=1).to("kpc")
+            gas_radii = np.linalg.norm(gas_coords, axis=1).to("kpc")
         elif gas_coords.size == 1:
             gas_radii = unyt_array(
-                np.array([np.linalg.norm(cent - gas_coords).to("kpc").value]), "kpc"
+                np.array([np.linalg.norm(gas_coords).to("kpc").value]), "kpc"
             )
         else:
             gas_radii = unyt_array(np.array([]), "kpc")
@@ -252,14 +251,14 @@ def _get_galaxies(
         # to not produce garbage)
         star_ini_masses = unyt_array(
             np.ascontiguousarray(
-                swift_gal.stars.initial_masses.to("Msun").to_value()[star_mask],
+                swift_gal.stars.initial_masses.to_value("Msun")[star_mask],
                 dtype=np.float64,
             ),
             "Msun",
         )
         star_current_masses = unyt_array(
             np.ascontiguousarray(
-                swift_gal.stars.masses.to("Msun").to_value()[star_mask],
+                swift_gal.stars.masses.to_value("Msun")[star_mask],
                 dtype=np.float64,
             ),
             "Msun",
@@ -280,16 +279,16 @@ def _get_galaxies(
         )
         star_coords = unyt_array(
             np.ascontiguousarray(
-                star_coords.to("Mpc").to_value()[star_mask],
+                star_coords.to_value("Mpc")[star_mask],
                 dtype=np.float64,
             ),
             "Mpc",
         )
         star_smls = unyt_array(
             np.ascontiguousarray(
-                swift_gal.stars.smoothing_lengths.to_physical()
-                .to("Mpc")
-                .to_value()[star_mask],
+                swift_gal.stars.smoothing_lengths.to_physical().to_value("Mpc")[
+                    star_mask
+                ],
                 dtype=np.float64,
             ),
             "Mpc",
@@ -310,14 +309,14 @@ def _get_galaxies(
         )
         gas_masses = unyt_array(
             np.ascontiguousarray(
-                swift_gal.gas.masses.to("Msun").to_value()[gas_mask],
+                swift_gal.gas.masses.to_value("Msun")[gas_mask],
                 dtype=np.float64,
             ),
             "Msun",
         )
         gas_dust_masses = unyt_array(
             np.ascontiguousarray(
-                dmasses.to("Msun").to_value()[gas_mask],
+                dmasses.to_value("Msun")[gas_mask],
                 dtype=np.float64,
             ),
             "Msun",
@@ -331,23 +330,21 @@ def _get_galaxies(
         )
         gas_coords = unyt_array(
             np.ascontiguousarray(
-                gas_coords.to("Mpc").to_value()[gas_mask],
+                gas_coords.to_value("Mpc")[gas_mask],
                 dtype=np.float64,
             ),
             "Mpc",
         )
         gas_smls = unyt_array(
             np.ascontiguousarray(
-                swift_gal.gas.smoothing_lengths.to_physical()
-                .to("Mpc")
-                .to_value()[gas_mask],
+                swift_gal.gas.smoothing_lengths.to_physical().to_value("Mpc")[gas_mask],
                 dtype=np.float64,
             ),
             "Mpc",
         )
         gas_radii = unyt_array(
             np.ascontiguousarray(
-                gas_radii.to("Mpc").to_value()[gas_mask],
+                gas_radii.to_value("Mpc")[gas_mask],
                 dtype=np.float64,
             ),
             "Mpc",

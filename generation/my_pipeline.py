@@ -342,7 +342,7 @@ if __name__ == "__main__":
     insts = InstrumentCollection(filepath=inst_path)
 
     # Set the resolution of the UV1500 insturment
-    insts["UV1500"].resolution = galaxies[0].physical_softening
+    insts["UV1500"].resolution = galaxies[0].physical_softening.to("kpc")
 
     # Set up the pipeline
     pipeline = Pipeline(

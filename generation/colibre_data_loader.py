@@ -92,14 +92,16 @@ def _set_up_swift_galaxy(
     with h5py.File(f"{location}/SOAP/halo_properties_{snap}.hdf5") as hf:
         aexp = hf["Cosmology"].attrs["Scale-factor"]
         redshift = hf["Cosmology"].attrs["Redshift"]
-        comoving_soft = hf["SWIFT/Parameters"].attrs[
-            "Gravity:comoving_baryon_softening"
-        ]
-        max_phys_soft = hf["SWIFT/Parameters"].attrs[
-            "Gravity:max_physical_baryon_softening"
-        ]
+        comoving_soft = (
+            float(hf["SWIFT/Parameters"].attrs["Gravity:comoving_baryon_softening"])
+            * Mpc
+        )
+        max_phys_soft = (
+            float(hf["SWIFT/Parameters"].attrs["Gravity:max_physical_baryon_softening"])
+            * Mpc
+        )
         print(comoving_soft, max_phys_soft)
-        soft = np.max([comoving_soft, max_phys_soft])
+        soft = np.max([comoving_soft / (1 + redshift), max_phys_soft])
 
     # If we have an empty chunk, we can't do anything
     if len(chunk_inds) == 0:

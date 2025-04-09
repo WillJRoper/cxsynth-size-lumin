@@ -16,6 +16,7 @@ def plot_size_evolution(
     lstyle="-",
     color="r",
     outpath=None,
+    mass_lim=None,
 ):
     """
     Plot the size evolution of galaxies.
@@ -44,17 +45,27 @@ def plot_size_evolution(
     # Loop over the files and extract the redshifts and sizes
     redshifts = []
     sizes = []
+    masses = []
     for f in files:
         # Open the file and extract the sizes and redshifts
         with h5py.File(f, "r") as hdf:
             # Get the redshift (it's the same for all galaxies)
             redshift = hdf["Galaxies/Redshift"]
             sizes.extend(hdf["Galaxies/Stars/MassRadii/0p5"][...])
+            masses.extend(hdf["Galaxies/Stars/StellarMass"][...])
             redshifts.extend(redshift)
 
     # Convert the data to numpy arrays
     redshifts = np.array(redshifts)
     sizes = np.array(sizes)
+    masses = np.array(masses)
+
+    # Apply the mass limit if it is set
+    if mass_lim is not None:
+        mask = masses > mass_lim
+        sizes = sizes[mask]
+        redshifts = redshifts[mask]
+        masses = masses[mask]
 
     # Convert the sizes to kpc
     sizes = sizes * 1e3
@@ -116,6 +127,7 @@ if __name__ == "__main__":
         label="L050_m6/Thermal",
         lstyle="--",
         color="r",
+        mass_lim=1e9,
     )
     fig, ax = plot_size_evolution(
         filepath="../data/L050_m6/HYBRID_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
@@ -124,6 +136,7 @@ if __name__ == "__main__":
         label="L050_m6/Hybrid",
         lstyle="--",
         color="b",
+        mass_lim=1e9,
     )
     fig, ax = plot_size_evolution(
         filepath="../data/L200_m7/THERMAL_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
@@ -132,6 +145,7 @@ if __name__ == "__main__":
         label="L200_m7/Thermal",
         lstyle="--",
         color="r",
+        mass_lim=1e9,
     )
     fig, ax = plot_size_evolution(
         filepath="../data/L200_m7/HYBRID_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
@@ -140,5 +154,6 @@ if __name__ == "__main__":
         label="L200_m7/Hybrid",
         lstyle="--",
         color="b",
+        mass_lim=1e9,
         outpath=outpath,
     )

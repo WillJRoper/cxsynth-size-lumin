@@ -9,7 +9,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 
 # Lstar = M_to_lum(-21)
-Lstar = 10**28.51
+Lstar = 10**29.03
 
 
 def size_evolution_func(z, r0, m):

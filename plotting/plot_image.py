@@ -214,6 +214,14 @@ def mega_rgb_image(res=1080):
 
     # Sanitise images we don't want
     files = [f for f in files if "FOFGroups" not in f]
+    _files = []
+    for f in files:
+        sp_f = f.replace(".hdf5", "").split("_")
+        if not sp_f[-1].isdigit():
+            _files.append(f)
+        elif not int(sp_f[-1]) < 1000:
+            _files.append(f)
+    files = _files
 
     # Create the 4K RGB images for each band
     f115W = np.zeros((res, res), dtype=np.float32)

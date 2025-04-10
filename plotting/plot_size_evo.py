@@ -60,6 +60,7 @@ def plot_size_evolution_medians(
     redshifts = []
     sizes = []
     masses = []
+    lums = []
     for f in files:
         # Open the file and extract the sizes and redshifts
         with h5py.File(f, "r") as hdf:
@@ -67,12 +68,16 @@ def plot_size_evolution_medians(
             redshift = hdf["Galaxies/Redshift"]
             sizes.extend(hdf["Galaxies/Stars/MassRadii/0p5"][...])
             masses.extend(hdf["Galaxies/Stars/StellarMass"][...])
+            lums.extend(
+                hdf["Galaxies/Stars/Photometry/Luminosities/stellar_total/UV1500"][...]
+            )
             redshifts.extend(redshift)
 
     # Convert the data to numpy arrays
     redshifts = np.array(redshifts)
     sizes = np.array(sizes)
     masses = np.array(masses)
+    lums = np.array(lums)
 
     # Apply the mass limit if it is set
     if mass_lim is not None:
@@ -80,9 +85,10 @@ def plot_size_evolution_medians(
         sizes = sizes[mask]
         redshifts = redshifts[mask]
         masses = masses[mask]
+        lums = lums[mask]
 
     # Do the luminosity cut 0.3 * Lstar < L < Lstar
-    mask = np.logical_and(flux > 0.3 * Lstar, flux < Lstar)
+    mask = np.logical_and(lums > 0.3 * Lstar, lums < Lstar)
 
     # Convert the sizes to kpc
     sizes = sizes * 1e3

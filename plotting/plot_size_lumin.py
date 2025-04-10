@@ -339,7 +339,7 @@ def plot_size_lum_hex_fit_multi(
     zs = []
     for file in files:
         # Open the file and extract the sizes and luminosities
-        with h5py.File(filepath, "r") as hdf:
+        with h5py.File(file, "r") as hdf:
             # Get the redshift (it's the same for all galaxies)
             zs.append(hdf["Galaxies/Redshift"][0])
 

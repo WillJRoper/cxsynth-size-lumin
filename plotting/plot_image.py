@@ -229,7 +229,7 @@ def mega_rgb_image(res=1080):
     }
 
     # Loop over the files
-    for f in files:
+    for ifile, f in enumerate(files):
         # Open the file and extract the images (if they are there)
         with h5py.File(f, "r") as hdf:
             # Check if we have the images
@@ -249,7 +249,7 @@ def mega_rgb_image(res=1080):
 
             # Loop over the galaxies placing each randomly in the image
             for i in range(ngals):
-                print(f"Placing galaxy {i}/{ngals}")
+                print(f"Placing galaxy {i+1}/{ngals} for file {ifile+1}/{len(files)}")
                 # Get a random position in the image
                 x = np.random.randint(0, res - shape[0])
                 y = np.random.randint(0, res - shape[1])

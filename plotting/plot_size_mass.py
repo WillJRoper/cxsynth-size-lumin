@@ -11,7 +11,7 @@ from scipy.stats import binned_statistic
 from unyt import Mpc
 
 
-def plot_size_mass_hex(filepath, outpath):
+def plot_size_mass_hex(filepath, outpath, xlim=None, ylim=None):
     """
     Plot the size-luminosity relation.
 
@@ -88,6 +88,12 @@ def plot_size_mass_hex(filepath, outpath):
     ax.set_xlabel(r"$M_\star / [\mathrm{M}_\odot]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
 
+    # Set the axis limits if they are provided
+    if xlim is not None:
+        ax.set_xlim(xlim, None)
+    if ylim is not None:
+        ax.set_ylim(ylim, None)
+
     # Make and label the colorbar
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label(r"$N_{\mathrm{gal}}$")
@@ -125,6 +131,19 @@ if __name__ == "__main__":
         help="The snapshot number to plot.",
         default=0,
     )
+    parser.add_argument(
+        "--xlim",
+        type=float,
+        help="The x-axis lower limit.",
+        default=None,
+    )
+    parser.add_argument(
+        "--ylim",
+        type=float,
+        help="The y-axis lower limit.",
+        default=None,
+    )
+
     args = parser.parse_args()
 
     # Define input and output paths
@@ -139,4 +158,4 @@ if __name__ == "__main__":
     if not os.path.exists(path):
         raise FileNotFoundError(f"{path} does not exist.")
 
-    plot_size_mass_hex(path, outpath)
+    plot_size_mass_hex(path, outpath, args.xlim, args.ylim)

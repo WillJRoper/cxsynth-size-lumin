@@ -39,7 +39,7 @@ def plot_size_evolution_medians(
     files = glob.glob(filepath + "/Synthesized_imgs_*_test_grid.hdf5")
 
     # If there's only one file don't bother
-    if len(files) == 1:
+    if len(files) <= 1:
         print("Only one file found, not plotting.")
         return fig, ax
 

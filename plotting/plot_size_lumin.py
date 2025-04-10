@@ -663,7 +663,7 @@ if __name__ == "__main__":
 
     # Define the output path, for special particle limits we all include that
     # info
-    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
+    path = f"../data/{run_name}/{variant}/Synthesized_imgs_*_{grid_name_no_ext}"
     outpath = f"../plots/{run_name}/{variant}/"
     if part_limit != 100:
         path += f"_part_limit_{part_limit}"

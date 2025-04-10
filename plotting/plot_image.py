@@ -247,25 +247,25 @@ def mega_rgb_image(res=1080):
 
             print(f"{f} has shape {shape}")
 
-            # Ready the images
-            for filt in [
-                "JWST/NIRCam.F115W",
-                "JWST/NIRCam.F150W",
-                "JWST/NIRCam.F200W",
-                "JWST/NIRCam.F277W",
-                "JWST/NIRCam.F356W",
-                "JWST/NIRCam.F444W",
-            ]:
-                # Loop over the galaxies placing each randomly in the image
-                for i in range(ngals):
-                    print(f"Placing galaxy {i}/{ngals} in {filt}")
+            # Loop over the galaxies placing each randomly in the image
+            for i in range(ngals):
+                print(f"Placing galaxy {i}/{ngals}")
+                # Get a random position in the image
+                x = np.random.randint(0, res - shape[0])
+                y = np.random.randint(0, res - shape[1])
+
+                # Ready the images
+                for filt in [
+                    "JWST/NIRCam.F115W",
+                    "JWST/NIRCam.F150W",
+                    "JWST/NIRCam.F200W",
+                    "JWST/NIRCam.F277W",
+                    "JWST/NIRCam.F356W",
+                    "JWST/NIRCam.F444W",
+                ]:
                     this_img = hdf[
                         "Galaxies/Stars/PSFImages/Flux/stellar_total/" + filt
                     ][i, :, :]
-
-                    # Get a random position in the image
-                    x = np.random.randint(0, res - shape[0])
-                    y = np.random.randint(0, res - shape[1])
 
                     # Add the image to the mega image
                     imgs[filt][x : x + shape[0], y : y + shape[1]] += this_img

@@ -387,4 +387,4 @@ if __name__ == "__main__":
     #     args.snap,
     #     args.gal_ind,
     # )
-    mega_rgb_image()
+    mega_rgb_image(res=4096)

@@ -10,17 +10,17 @@ from scipy.stats import binned_statistic
 
 
 def size_evolution_func(z, r0, m):
-    """The function to fit the size evolution."""
+    """Fit the size evolution."""
     return r0 * (1 + z) ** m
 
 
-def plot_size_evolution(
+def plot_size_evolution_medians(
     filepath,
     fig=None,
     ax=None,
     label=None,
     lstyle="-",
-    color="r",
+    color=None,
     outpath=None,
     mass_lim=None,
 ):
@@ -212,8 +212,8 @@ def plot_size_evolution_comps(fig, ax, outpath=None):
 if __name__ == "__main__":
     outpath = "../plots/thermal_vs_hybrid_size_evo.png"
 
-    # Plot the size evolution
-    fig, ax = plot_size_evolution(
+    # Plot the size evolution for Thermal vs Hybrid
+    fig, ax = plot_size_evolution_medians(
         filepath="../data/L050_m6/THERMAL_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
         fig=None,
         ax=None,
@@ -222,7 +222,7 @@ if __name__ == "__main__":
         color="r",
         mass_lim=1e9,
     )
-    fig, ax = plot_size_evolution(
+    fig, ax = plot_size_evolution_medians(
         filepath="../data/L050_m6/HYBRID_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
         fig=fig,
         ax=ax,
@@ -231,7 +231,7 @@ if __name__ == "__main__":
         color="b",
         mass_lim=1e9,
     )
-    fig, ax = plot_size_evolution(
+    fig, ax = plot_size_evolution_medians(
         filepath="../data/L200_m7/THERMAL_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
         fig=fig,
         ax=ax,
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         color="g",
         mass_lim=1e9,
     )
-    fig, ax = plot_size_evolution(
+    fig, ax = plot_size_evolution_medians(
         filepath="../data/L200_m7/HYBRID_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
         fig=fig,
         ax=ax,
@@ -248,7 +248,25 @@ if __name__ == "__main__":
         lstyle="-",
         color="cyan",
         mass_lim=1e9,
+        outpath=outpath,
     )
+
+    plt.close(fig)
+
+    # Plot the size evolution for all snaps completed so far
+    files = glob.glob("../data/*/THERMAL_AGN_m*/Synthesized_imgs_*_test_grid.hdf5")
+    fig = None
+    ax = None
+    for file in files:
+        fig, ax = plot_size_evolution_medians(
+            filepath=file,
+            fig=fig,
+            ax=ax,
+            label=f"{file.split("/")[2]}/{file.split('/')[3][:-3]}",
+            lstyle="-",
+            mass_lim=1e9,
+        )
+
     fig, ax = plot_size_evolution_comps(
         fig=fig,
         ax=ax,

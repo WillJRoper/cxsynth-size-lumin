@@ -273,8 +273,13 @@ if __name__ == "__main__":
             mass_lim=1e9,
         )
 
-    fig, ax = plot_size_evolution_comps(
-        fig=fig,
-        ax=ax,
-        outpath=outpath,
+    ax.legend(
+        loc="best",
+        fontsize=8,
     )
+    fig.savefig(outpath, dpi=300, bbox_inches="tight")
+
+    # fig, ax = plot_size_evolution_comps(
+    #     fig=fig,
+    #     ax=ax,
+    # )

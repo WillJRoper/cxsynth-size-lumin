@@ -41,7 +41,7 @@ def plot_size_evolution_medians(
     # If there's only one file don't bother
     if len(files) == 1:
         print("Only one file found, not plotting.")
-        return
+        return fig, ax
 
     # We need to make sure we only have the combined files, luckily these all
     # have 1 extra element delineated by an underscore so we can use that to

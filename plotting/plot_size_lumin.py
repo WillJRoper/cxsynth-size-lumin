@@ -1,6 +1,7 @@
 """A script for plotting the size-luminosity relation."""
 
 import argparse
+import glob
 import os
 
 import h5py
@@ -315,17 +316,13 @@ def plot_size_lum_hex_fit_multi(
     Args:
         filepath (str): The path to the file to plot.
     """
-    # Open the file and extract the sizes and luminosities
-    with h5py.File(filepath, "r") as hdf:
-        # Get the redshift (it's the same for all galaxies)
-        redshift = hdf["Galaxies/Redshift"][0]
+    # Get all the files at the path
+    files = glob.glob(filepath)
 
-        print("Plotting the size-luminosity relation at z=", redshift)
-
-        sizes = hdf[
-            f"Galaxies/Stars/PixelHalfLightRadii/Luminosity/{spec_type}/UV1500"
-        ][...]
-        flux = hdf[f"Galaxies/Stars/Photometry/Luminosities/{spec_type}/UV1500"][...]
+    # Nothing to do with no files
+    if len(files) == 0:
+        print("No files found at path:", filepath)
+        return
 
     # Create the plot
     if fig is None:
@@ -336,38 +333,58 @@ def plot_size_lum_hex_fit_multi(
         ax.grid(True)
         ax.set_axisbelow(True)
 
-    # Remove galaxies with no flux
-    mask = np.logical_and(flux > 0, sizes > 0)
-    flux = flux[mask]
-    sizes = sizes[mask]
+    # Loop over the files
+    lums = {}
+    sizes = {}
+    zs = []
+    for file in files:
+        # Open the file and extract the sizes and luminosities
+        with h5py.File(filepath, "r") as hdf:
+            # Get the redshift (it's the same for all galaxies)
+            zs.append(hdf["Galaxies/Redshift"][0])
 
-    # Fit the size-luminosity relation
-    popt, pcov = curve_fit(
-        size_lumin_fit,
-        flux,
-        sizes,
-        p0=[1, 0.5],
-    )
-    print(f"{filepath} Fitted parameters:", popt)
+            print("Plotting the size-luminosity relation at z=", zs[-1])
 
-    # Plot the fit
-    ax.plot(
-        flux,
-        size_lumin_fit(flux, *popt),
-        color="r",
-        linestyle="-",
-        label="",
-    )
+            sizes[zs[-1]] = hdf[
+                f"Galaxies/Stars/PixelHalfLightRadii/Luminosity/{spec_type}/UV1500"
+            ][...]
+            lums[zs[-1]] = hdf[
+                f"Galaxies/Stars/Photometry/Luminosities/{spec_type}/UV1500"
+            ][...]
 
-    ax.text(
-        0.95,
-        0.05,
-        f"$z={redshift:.1f}$",
-        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
-        transform=ax.transAxes,
-        horizontalalignment="right",
-        fontsize=8,
-    )
+    # Construct a colormap from the redshifts
+    cmap = plt.get_cmap("viridis")
+    norm = plt.Normalize(vmin=min(zs), vmax=max(zs))
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+
+    # Loop over the redshifts, fit and plot
+    for z in zs:
+        # Remove galaxies with no flux
+        mask = np.logical_and(lums > 0, sizes > 0)
+        lum = lums[z][mask]
+        size = sizes[z][mask]
+
+        # Fit the size-luminosity relation
+        popt, pcov = curve_fit(
+            size_lumin_fit,
+            lum,
+            size,
+            p0=[1, 0.5],
+        )
+        print(f"{filepath} Fitted parameters:", popt)
+
+        # Plot the fit
+        xs = np.logspace(
+            np.log10(np.min(lum)),
+            np.log10(np.max(lum)),
+            100,
+        )
+        ax.plot(
+            xs,
+            size_lumin_fit(xs, *popt),
+            color=sm.to_rgba(z),
+            linestyle="-",
+        )
 
     # Set the axis labels
     ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
@@ -379,8 +396,12 @@ def plot_size_lum_hex_fit_multi(
     if ylim is not None:
         ax.set_ylim(ylim, None)
 
+    # Add a colorbar
+    cbar = fig.colorbar(sm, ax=ax)
+    cbar.set_label(r"$z$")
+
     fig.savefig(
-        outpath + f"UV_size_lum_hex_{spec_type}.png",
+        outpath + f"UV_size_lum_redshift_evo_{spec_type}.png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -666,4 +687,11 @@ if __name__ == "__main__":
     #     plot_size_flux_comp(path, args.filter, outpath)
     # else:
     #     plot_size_lum_hex_uv(path, args.filtpath, outpath)
-    plot_size_lum_hex_uv(path, outpath, args.spec_type, xlim=args.xlim, ylim=args.ylim)
+    # plot_size_lum_hex_uv(path, outpath, args.spec_type, xlim=args.xlim, ylim=args.ylim)
+    plot_size_lum_hex_fit_multi(
+        path,
+        outpath,
+        args.spec_type,
+        xlim=args.xlim,
+        ylim=args.ylim,
+    )

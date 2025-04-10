@@ -222,7 +222,7 @@ def plot_size_evolution_comps(fig, ax, outpath=None):
         )
 
         fig.savefig(
-            f"{outpath}size_evolution.png",
+            outpath,
             dpi=300,
             bbox_inches="tight",
         )

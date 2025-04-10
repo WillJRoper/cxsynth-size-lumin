@@ -17,7 +17,7 @@ from unyt import angstrom
 Lstar = 10**28.51
 
 
-def size_lumin_fit(lum, Lstar, r0, b):
+def size_lumin_fit(lum, r0, b):
     """
     Fit the size-luminosity relation.
 

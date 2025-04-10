@@ -36,7 +36,7 @@ def plot_size_evolution_medians(
         save = True
 
     # Get all the files in the directory
-    files = glob.glob(filepath)
+    files = glob.glob(filepath + "/Synthesized_imgs_*_test_grid.hdf5")
 
     # If there's only one file don't bother
     if len(files) == 1:
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
     # Plot the size evolution for Thermal vs Hybrid
     fig, ax = plot_size_evolution_medians(
-        filepath="../data/L050_m6/THERMAL_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
+        filepath="../data/L050_m6/THERMAL_AGN_m6/",
         fig=None,
         ax=None,
         label="L050_m6/Thermal",
@@ -228,7 +228,7 @@ if __name__ == "__main__":
         mass_lim=1e9,
     )
     fig, ax = plot_size_evolution_medians(
-        filepath="../data/L050_m6/HYBRID_AGN_m6/Synthesized_imgs_*_test_grid.hdf5",
+        filepath="../data/L050_m6/HYBRID_AGN_m6/",
         fig=fig,
         ax=ax,
         label="L050_m6/Hybrid",
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         mass_lim=1e9,
     )
     fig, ax = plot_size_evolution_medians(
-        filepath="../data/L200_m7/THERMAL_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
+        filepath="../data/L200_m7/THERMAL_AGN_m7/",
         fig=fig,
         ax=ax,
         label="L200_m7/Thermal",
@@ -246,7 +246,7 @@ if __name__ == "__main__":
         mass_lim=1e9,
     )
     fig, ax = plot_size_evolution_medians(
-        filepath="../data/L200_m7/HYBRID_AGN_m7/Synthesized_imgs_*_test_grid.hdf5",
+        filepath="../data/L200_m7/HYBRID_AGN_m7/",
         fig=fig,
         ax=ax,
         label="L200_m7/Hybrid",
@@ -259,7 +259,7 @@ if __name__ == "__main__":
     plt.close(fig)
 
     # Plot the size evolution for all snaps completed so far
-    files = glob.glob("../data/*/THERMAL_AGN_m*/Synthesized_imgs_*_test_grid.hdf5")
+    files = glob.glob("../data/*/THERMAL_AGN_m*/")
     fig = None
     ax = None
     for file in files:

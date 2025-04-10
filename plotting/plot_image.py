@@ -1,7 +1,7 @@
 """A script for plotting galaxy images in different filters."""
 
-import argparse
-import os
+# import argparse
+import glob
 
 import h5py
 import matplotlib.pyplot as plt
@@ -206,100 +206,173 @@ def plot_rgb_image(path, outpath, run_name, variant, snap, gal_ind=None):
         plt.close(fig)
 
 
+def mega_rgb_image(res=1080):
+    """Create a mega RGB image from the images in all HDF5 files."""
+    # We need to extract all the HDF5 files in the directory
+    # and then loop over them
+    files = glob.glob("../data/*/*/Synthesized_imgs_*")
+
+    # Create the 4K RGB images for each band
+    f115W = np.zeros((res, res), dtype=np.float32)
+    f150W = np.zeros((res, res), dtype=np.float32)
+    f200W = np.zeros((res, res), dtype=np.float32)
+    f277W = np.zeros((res, res), dtype=np.float32)
+    f356W = np.zeros((res, res), dtype=np.float32)
+    f444W = np.zeros((res, res), dtype=np.float32)
+    imgs = {
+        "JWST/NIRCam.F115W": f115W,
+        "JWST/NIRCam.F150W": f150W,
+        "JWST/NIRCam.F200W": f200W,
+        "JWST/NIRCam.F277W": f277W,
+        "JWST/NIRCam.F356W": f356W,
+        "JWST/NIRCam.F444W": f444W,
+    }
+
+    # Loop over the files
+    for f in files:
+        # Open the file and extract the images (if they are there)
+        with h5py.File(f, "r") as hdf:
+            # Check if we have the images
+            if "PSFImages" not in hdf["Galaxies/Stars"].keys():
+                print(f"No images in {f}")
+                continue
+
+            # Get the shape of the images
+            shape = hdf[
+                "Galaxies/Stars/PSFImages/Flux/stellar_total/JWST/NIRCam.F115W"
+            ].shape[1:]
+            ngals = hdf[
+                "Galaxies/Stars/PSFImages/Flux/stellar_total/JWST/NIRCam.F115W"
+            ].shape[0]
+
+            print(f"{f} has shape {shape}")
+
+            # Ready the images
+            for filt in [
+                "JWST/NIRCam.F115W",
+                "JWST/NIRCam.F150W",
+                "JWST/NIRCam.F200W",
+                "JWST/NIRCam.F277W",
+                "JWST/NIRCam.F356W",
+                "JWST/NIRCam.F444W",
+            ]:
+                # Loop over the galaxies placing each randomly in the image
+                for i in range(ngals):
+                    print(f"Placing galaxy {i}/{ngals} in {filt}")
+                    this_img = hdf[
+                        "Galaxies/Stars/PSFImages/Flux/stellar_total/" + filt
+                    ][i, :, :]
+
+                    # Get a random position in the image
+                    x = np.random.randint(0, res - shape[0])
+                    y = np.random.randint(0, res - shape[1])
+
+                    # Add the image to the mega image
+                    imgs[filt][x : x + shape[0], y : y + shape[1]] += this_img
+
+    # Write the images we've made to a HDF5 file
+    with h5py.File("mega_rgb_images.hdf5", "w") as hdf:
+        # Create the groups
+        group = hdf.create_group("JWST")
+        for key in imgs.keys():
+            group.create_dataset(key, data=imgs[key])
+
+
 if __name__ == "__main__":
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Plot galaxy images in different filters."
-    )
-    parser.add_argument(
-        "--run-name",
-        type=str,
-        help="The name of the simulation (the directory in run-dir).",
-        default="L025_m7",
-    )
-    parser.add_argument(
-        "--variant",
-        type=str,
-        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
-        default="THERMAL_AGN_m7",
-    )
-    parser.add_argument(
-        "--snap",
-        type=int,
-        help="The snapshot number to plot.",
-        default=0,
-    )
-    parser.add_argument(
-        "--gal-ind",
-        type=int,
-        help="The index of the galaxy to plot.",
-        default=None,
-    )
-    parser.add_argument(
-        "--part-limit",
-        type=int,
-        help="The lower mass limit for galaxies.",
-        default=100,
-    )
-    parser.add_argument(
-        "--fof-only",
-        action="store_true",
-        help="If true, only load the FOF groups.",
-    )
-    parser.add_argument(
-        "--grid",
-        type=str,
-        help="The path to the grid.",
-    )
-
-    args = parser.parse_args()
-
-    # Define input and output paths
-    run_name = args.run_name
-    variant = args.variant
-    part_limit = args.part_limit
-    fof_only = args.fof_only
-    grid_name = args.grid
-    grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
-    snap = str(args.snap).zfill(4)
-    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{args.snap:04d}.hdf5"
-    outpath = f"../plots/{run_name}/{variant}/images/"
-
-    # Define the output path, for special particle limits we all include that
-    # info
-    path = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
-    outpath = f"../plots/{run_name}/{variant}/"
-    if part_limit != 100:
-        path += f"_part_limit_{part_limit}"
-        outpath += f"/part_limit_{part_limit}"
-    if fof_only:
-        path += "_FOFGroups"
-        outpath += "/FOFGroups"
-    path += ".hdf5"
-    outpath += "/images/"
-
-    # Check if the input file exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Input file {path} does not exist.")
-
-    # Create the plot directory if it doesn't exist
-    if not os.path.exists(outpath):
-        os.makedirs(outpath)
-
-    # Call the function to plot the images
-    plot_cutout_grid(
-        path,
-        outpath,
-        run_name,
-        variant,
-        args.snap,
-        args.gal_ind,
-    )
-    plot_rgb_image(
-        path,
-        outpath,
-        run_name,
-        variant,
-        args.snap,
-        args.gal_ind,
-    )
+    # # Parse command line arguments
+    # parser = argparse.ArgumentParser(
+    #     description="Plot galaxy images in different filters."
+    # )
+    # parser.add_argument(
+    #     "--run-name",
+    #     type=str,
+    #     help="The name of the simulation (the directory in run-dir).",
+    #     default="L025_m7",
+    # )
+    # parser.add_argument(
+    #     "--variant",
+    #     type=str,
+    #     help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
+    #     default="THERMAL_AGN_m7",
+    # )
+    # parser.add_argument(
+    #     "--snap",
+    #     type=int,
+    #     help="The snapshot number to plot.",
+    #     default=0,
+    # )
+    # parser.add_argument(
+    #     "--gal-ind",
+    #     type=int,
+    #     help="The index of the galaxy to plot.",
+    #     default=None,
+    # )
+    # parser.add_argument(
+    #     "--part-limit",
+    #     type=int,
+    #     help="The lower mass limit for galaxies.",
+    #     default=100,
+    # )
+    # parser.add_argument(
+    #     "--fof-only",
+    #     action="store_true",
+    #     help="If true, only load the FOF groups.",
+    # )
+    # parser.add_argument(
+    #     "--grid",
+    #     type=str,
+    #     help="The path to the grid.",
+    # )
+    #
+    # args = parser.parse_args()
+    #
+    # # Define input and output paths
+    # run_name = args.run_name
+    # variant = args.variant
+    # part_limit = args.part_limit
+    # fof_only = args.fof_only
+    # grid_name = args.grid
+    # grid_name_no_ext = grid_name.split("/")[-1].split(".")[0]
+    # snap = str(args.snap).zfill(4)
+    # path = f"../data/{run_name}/{variant}/Synthesized_imgs_{args.snap:04d}.hdf5"
+    # outpath = f"../plots/{run_name}/{variant}/images/"
+    #
+    # # Define the output path, for special particle limits we all include that
+    # # info
+    # path = f"../data/{run_name}/{variant}/Synthesized_imgs_{snap}_{grid_name_no_ext}"
+    # outpath = f"../plots/{run_name}/{variant}/"
+    # if part_limit != 100:
+    #     path += f"_part_limit_{part_limit}"
+    #     outpath += f"/part_limit_{part_limit}"
+    # if fof_only:
+    #     path += "_FOFGroups"
+    #     outpath += "/FOFGroups"
+    # path += ".hdf5"
+    # outpath += "/images/"
+    #
+    # # Check if the input file exists
+    # if not os.path.exists(path):
+    #     raise FileNotFoundError(f"Input file {path} does not exist.")
+    #
+    # # Create the plot directory if it doesn't exist
+    # if not os.path.exists(outpath):
+    #     os.makedirs(outpath)
+    #
+    # # Call the function to plot the images
+    # plot_cutout_grid(
+    #     path,
+    #     outpath,
+    #     run_name,
+    #     variant,
+    #     args.snap,
+    #     args.gal_ind,
+    # )
+    # plot_rgb_image(
+    #     path,
+    #     outpath,
+    #     run_name,
+    #     variant,
+    #     args.snap,
+    #     args.gal_ind,
+    # )
+    mega_rgb_image()

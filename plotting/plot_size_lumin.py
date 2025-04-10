@@ -204,7 +204,7 @@ def plot_size_lum_hex_uv_obs(filepath, filtpath, outpath):
     )
 
 
-def plot_size_lum_hex_uv(filepath, outpath, xlim=None, ylim=None):
+def plot_size_lum_hex_uv(filepath, outpath, spec_type, xlim=None, ylim=None):
     """
     Plot the size-luminosity relation.
 
@@ -354,6 +354,16 @@ def plot_size_flux_comp(filepath, filter, outpath):
     )
 
 
+def plot_size_lumin_relation_uv_fit(
+    filepath,
+    fig=None,
+    ax=None,
+    xlim=None,
+    ylim=None,
+):
+    pass
+
+
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
@@ -418,6 +428,12 @@ if __name__ == "__main__":
         default=None,
         help="The y-axis lower limit.",
     )
+    parser.add_argument(
+        "--spec-type",
+        type=str,
+        default="stellar_total",
+        help="The type of spectrum to use.",
+    )
 
     args = parser.parse_args()
 
@@ -458,4 +474,4 @@ if __name__ == "__main__":
     #     plot_size_flux_comp(path, args.filter, outpath)
     # else:
     #     plot_size_lum_hex_uv(path, args.filtpath, outpath)
-    plot_size_lum_hex_uv(path, outpath, xlim=args.xlim, ylim=args.ylim)
+    plot_size_lum_hex_uv(path, outpath, args.spec_type, xlim=args.xlim, ylim=args.ylim)

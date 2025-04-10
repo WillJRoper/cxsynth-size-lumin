@@ -38,6 +38,11 @@ def plot_size_evolution_medians(
     # Get all the files in the directory
     files = glob.glob(filepath)
 
+    # If there's only one file don't bother
+    if len(files) == 1:
+        print("Only one file found, not plotting.")
+        return
+
     # We need to make sure we only have the combined files, luckily these all
     # have 1 extra element delineated by an underscore so we can use that to
     # filter out the other files

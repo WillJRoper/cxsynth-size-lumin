@@ -286,7 +286,7 @@ if __name__ == "__main__":
             ax=ax,
             label=f"{file.split("/")[2]}/{file.split('/')[3][:-3]}",
             lstyle="-",
-            # mass_lim=1e9,
+            mass_lim=1e9,
         )
 
     # ax.legend(

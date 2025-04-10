@@ -448,12 +448,17 @@ def plot_flares_fits(fig, ax, sm, xs, z):
         "6": (1.370, 0.279),
     }
 
+    # Get the FLARES fit params
+    flares_params = fits.get(str(int(z)), None)
+
+    print(f"FLARES-1 fit params for z={z}:", flares_params)
+
     # Plot the fits for each redshift
     ax.plot(
         xs,
         size_lumin_fit(
             xs,
-            *fits[int(z)],
+            *flares_params,
         ),
         color=sm.to_rgba(float(z)),
         linestyle="--",

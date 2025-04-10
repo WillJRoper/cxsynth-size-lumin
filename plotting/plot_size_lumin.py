@@ -11,11 +11,17 @@ from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
+from synthesizer.conversions import absolute_mag_to_lnu
 from synthesizer.instruments import FilterCollection
 from unyt import angstrom
 
 # Lstar = M_to_lum(-21)
 Lstar = 10**29.03
+
+
+def kawa_fit(l, r0, beta):
+    """Special Kawamata fit."""
+    return r0 * (l / absolute_mag_to_lnu(-21)) ** beta
 
 
 def size_lumin_fit(lum, r0, b):
@@ -391,6 +397,9 @@ def plot_size_lum_hex_fit_multi(
         # Plot the FLARES-1 fits
         ax = plot_flares_fits(fig, ax, sm, xs, z)
 
+        # Plot kawamata fits
+        ax = plot_kawamata_fit(fig, ax, sm, xs, z)
+
     # Set the axis labels
     ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
@@ -420,6 +429,13 @@ def plot_size_lum_hex_fit_multi(
             color="k",
             linestyle="--",
             label="FLARES-1 (Roper+22)",
+        ),
+        Line2D(
+            [0],
+            [0],
+            color="k",
+            linestyle="dotted",
+            label="Kawamata+17",
         ),
     ]
 
@@ -467,6 +483,39 @@ def plot_flares_fits(fig, ax, sm, xs, z):
         ),
         color=sm.to_rgba(float(z)),
         linestyle="--",
+    )
+    return ax
+
+
+def plot_kawamata_fit(fig, ax, sm, xs, z):
+    """Plot the Kawamata fits."""
+    kawa_params = {
+        "beta": {6: 0.46, 7: 0.46, 8: 0.38, 9: 0.56},
+        "r_0": {6: 0.94, 7: 0.94, 8: 0.81, 9: 1.2},
+    }
+
+    # Nothing to do if z not in the fits
+    if str(int(z)) not in kawa_params["beta"]:
+        print(f"No Kawamata fit for z={z}")
+        return ax
+
+    # Get the Kawamata fit params
+    kawamata_params = (
+        kawa_params["r_0"][str(int(z))],
+        kawa_params["beta"][str(int(z))],
+    )
+
+    print(f"Kawamata fit params for z={z}:", kawamata_params)
+
+    # Plot the fits for each redshift
+    ax.plot(
+        xs,
+        kawa_fit(
+            xs,
+            *kawamata_params,
+        ),
+        color=sm.to_rgba(float(z)),
+        linestyle="dotted",
     )
     return ax
 

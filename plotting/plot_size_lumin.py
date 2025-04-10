@@ -495,14 +495,14 @@ def plot_kawamata_fit(fig, ax, sm, xs, z):
     }
 
     # Nothing to do if z not in the fits
-    if str(int(z)) not in kawa_params["beta"]:
+    if int(z) not in kawa_params["beta"]:
         print(f"No Kawamata fit for z={z}")
         return ax
 
     # Get the Kawamata fit params
     kawamata_params = (
-        kawa_params["r_0"][str(int(z))],
-        kawa_params["beta"][str(int(z))],
+        kawa_params["r_0"][int(z)],
+        kawa_params["beta"][int(z)],
     )
 
     print(f"Kawamata fit params for z={z}:", kawamata_params)

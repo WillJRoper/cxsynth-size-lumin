@@ -673,9 +673,9 @@ if __name__ == "__main__":
         outpath += "/FOFGroups"
     path += ".hdf5"
 
-    # Check if the input file exists
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Input file {path} does not exist.")
+    # # Check if the input file exists
+    # if not os.path.exists(path):
+    #     raise FileNotFoundError(f"Input file {path} does not exist.")
 
     # Create the plot directory if it doesn't exist
     if not os.path.exists(outpath):

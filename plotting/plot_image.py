@@ -212,6 +212,9 @@ def mega_rgb_image(res=1080):
     # and then loop over them
     files = glob.glob("../data/*/*/Synthesized_imgs_*")
 
+    # Sanitise images we don't want
+    files = [f for f in files if "FOFGroups" not in f]
+
     # Create the 4K RGB images for each band
     f115W = np.zeros((res, res), dtype=np.float32)
     f150W = np.zeros((res, res), dtype=np.float32)
@@ -232,6 +235,7 @@ def mega_rgb_image(res=1080):
     for ifile, f in enumerate(files):
         # Open the file and extract the images (if they are there)
         with h5py.File(f, "r") as hdf:
+            # Skip if Stars is missing entirely (broken file)
             # Check if we have the images
             if "PSFImages" not in hdf["Galaxies/Stars"].keys():
                 print(f"No images in {f}")

@@ -448,6 +448,11 @@ def plot_flares_fits(fig, ax, sm, xs, z):
         "6": (1.370, 0.279),
     }
 
+    # Nothing to do if z not in the fits
+    if str(int(z)) not in fits:
+        print(f"No FLARES-1 fit for z={z}")
+        return ax
+
     # Get the FLARES fit params
     flares_params = fits.get(str(int(z)), None)
 

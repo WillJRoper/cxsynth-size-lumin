@@ -328,6 +328,7 @@ def plot_size_lum_hex_fit_multi(
     if fig is None:
         fig = plt.figure(figsize=(3.5, 3.5))
         ax = fig.add_subplot(111)
+        ax.loglog()
 
         # Add a grid and make sure its always at the back
         ax.grid(True)

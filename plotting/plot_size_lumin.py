@@ -362,7 +362,7 @@ def plot_size_lum_hex_fit_multi(
     # Loop over the redshifts, fit and plot
     for z in zs:
         # Remove galaxies with no flux
-        mask = np.logical_and(lums[z] > 0, sizes[z] > 0)
+        mask = np.logical_and(lums[z] > 10**28.4, sizes[z] > 0)
         lum = lums[z][mask]
         size = sizes[z][mask]
 

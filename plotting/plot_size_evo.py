@@ -258,6 +258,7 @@ if __name__ == "__main__":
 
     plt.close(fig)
 
+    outpath = "../plots/all_runs_size_evo.png"
     # Plot the size evolution for all snaps completed so far
     files = glob.glob("../data/*/THERMAL_AGN_m*/")
     fig = None

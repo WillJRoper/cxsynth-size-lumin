@@ -274,7 +274,7 @@ def plot_size_lum_hex_uv(filepath, outpath, spec_type, xlim=None, ylim=None):
         ax.set_ylim(ylim, None)
 
     fig.savefig(
-        outpath + "UV_size_lum_hex.png",
+        outpath + f"UV_size_lum_hex_{spec_type}.png",
         bbox_inches="tight",
         dpi=300,
     )

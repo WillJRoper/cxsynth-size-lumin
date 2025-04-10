@@ -249,6 +249,26 @@ def plot_size_lum_hex_uv(filepath, outpath, spec_type, xlim=None, ylim=None):
         norm=LogNorm(),
     )
 
+    # Plot a median line
+    median_xs = np.logspace(
+        np.log10(np.min(flux)),
+        np.log10(np.max(flux)),
+        15,
+    )
+    median_ys = binned_statistic(
+        flux,
+        sizes,
+        statistic="median",
+        bins=median_xs,
+    )[0]
+    ax.plot(
+        (median_xs[:-1] + median_xs[1:]) / 2,
+        median_ys,
+        color="r",
+        linestyle="--",
+        label="Median",
+    )
+
     ax.text(
         0.95,
         0.05,

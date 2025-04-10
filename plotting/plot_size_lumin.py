@@ -15,7 +15,7 @@ from synthesizer.instruments import FilterCollection
 from unyt import angstrom
 
 # Lstar = M_to_lum(-21)
-Lstar = 10**28.51
+Lstar = 10**29.03
 
 
 def size_lumin_fit(lum, r0, b):

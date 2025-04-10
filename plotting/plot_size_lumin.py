@@ -8,6 +8,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
+from matplotlib.lines import Line2D
 from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 from synthesizer.instruments import FilterCollection
@@ -387,6 +388,9 @@ def plot_size_lum_hex_fit_multi(
             linestyle="-",
         )
 
+        # Plot the FLARES-1 fits
+        ax = plot_flares_fits(fig, ax, sm, xs, z)
+
     # Set the axis labels
     ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
     ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
@@ -401,11 +405,60 @@ def plot_size_lum_hex_fit_multi(
     cbar = fig.colorbar(sm, ax=ax)
     cbar.set_label(r"$z$")
 
+    # Define the legend
+    legend_lines = [
+        Line2D(
+            [0],
+            [0],
+            color="k",
+            linestyle="-",
+            label="COLIBRE",
+        ),
+        Line2D(
+            [0],
+            [0],
+            color="k",
+            linestyle="--",
+            label="FLARES-1 (Roper+22)",
+        ),
+    ]
+
+    # Add the legend
+    ax.legend(
+        handles=legend_lines,
+        loc="best",
+        fontsize=8,
+        fancybox=True,
+    )
+
     fig.savefig(
         outpath + f"UV_size_lum_redshift_evo_{spec_type}.png",
         bbox_inches="tight",
         dpi=300,
     )
+
+
+def plot_flares_fits(fig, ax, sm, xs, z):
+    """Plot the FLARES-1 fits."""
+    # Define the FLARES-1 fits
+    fits = {
+        "9": (0.793, 0.519),
+        "8": (0.842, 0.319),
+        "7": (1.126, 0.290),
+        "6": (1.370, 0.279),
+    }
+
+    # Plot the fits for each redshift
+    ax.plot(
+        xs,
+        size_lumin_fit(
+            xs,
+            *fits[int(z)],
+        ),
+        color=sm.to_rgba(float(z)),
+        linestyle="--",
+    )
+    return ax
 
 
 def plot_size_lum_hex_uv_fit(

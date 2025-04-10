@@ -145,6 +145,10 @@ def plot_size_evolution_medians(
         color=color,
     )
 
+    # Extract the color from the plot if not provided
+    if color is None:
+        color = ax.lines[-1].get_color()
+
     # Plot the error bars as shaded regions
     ax.fill_between(
         (median_xs[:-1] + median_xs[1:]) / 2,

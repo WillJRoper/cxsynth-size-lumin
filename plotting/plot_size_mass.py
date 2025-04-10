@@ -92,7 +92,7 @@ def plot_size_mass_hex(filepath, outpath, xlim=None, ylim=None):
     if xlim is not None:
         ax.set_xlim(xlim, None)
     if ylim is not None:
-        ax.set_ylim(ylim, 1.5)
+        ax.set_ylim(ylim, 15)
 
     # Make and label the colorbar
     cbar = fig.colorbar(im, ax=ax)

@@ -300,6 +300,178 @@ def plot_size_lum_hex_uv(filepath, outpath, spec_type, xlim=None, ylim=None):
     )
 
 
+def plot_size_lum_hex_fit_multi(
+    filepath,
+    outpath,
+    spec_type,
+    xlim=None,
+    ylim=None,
+    fig=None,
+    ax=None,
+):
+    """
+    Plot the size-luminosity relation.
+
+    Args:
+        filepath (str): The path to the file to plot.
+    """
+    # Open the file and extract the sizes and luminosities
+    with h5py.File(filepath, "r") as hdf:
+        # Get the redshift (it's the same for all galaxies)
+        redshift = hdf["Galaxies/Redshift"][0]
+
+        print("Plotting the size-luminosity relation at z=", redshift)
+
+        sizes = hdf[
+            f"Galaxies/Stars/PixelHalfLightRadii/Luminosity/{spec_type}/UV1500"
+        ][...]
+        flux = hdf[f"Galaxies/Stars/Photometry/Luminosities/{spec_type}/UV1500"][...]
+
+    # Create the plot
+    if fig is None:
+        fig = plt.figure(figsize=(3.5, 3.5))
+        ax = fig.add_subplot(111)
+
+        # Add a grid and make sure its always at the back
+        ax.grid(True)
+        ax.set_axisbelow(True)
+
+    # Remove galaxies with no flux
+    mask = np.logical_and(flux > 0, sizes > 0)
+    flux = flux[mask]
+    sizes = sizes[mask]
+
+    # Fit the size-luminosity relation
+    popt, pcov = curve_fit(
+        size_lumin_fit,
+        flux,
+        sizes,
+        p0=[1, 0.5],
+    )
+    print(f"{filepath} Fitted parameters:", popt)
+
+    # Plot the fit
+    ax.plot(
+        flux,
+        size_lumin_fit(flux, *popt),
+        color="r",
+        linestyle="-",
+        label="",
+    )
+
+    ax.text(
+        0.95,
+        0.05,
+        f"$z={redshift:.1f}$",
+        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
+        transform=ax.transAxes,
+        horizontalalignment="right",
+        fontsize=8,
+    )
+
+    # Set the axis labels
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
+    ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
+
+    # Set the axis limits
+    if xlim is not None:
+        ax.set_xlim(xlim, None)
+    if ylim is not None:
+        ax.set_ylim(ylim, None)
+
+    fig.savefig(
+        outpath + f"UV_size_lum_hex_{spec_type}.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+
+def plot_size_lum_hex_uv_fit(
+    filepath,
+    outpath,
+    spec_type,
+    xlim=None,
+    ylim=None,
+    fig=None,
+    ax=None,
+):
+    """
+    Plot the size-luminosity relation.
+
+    Args:
+        filepath (str): The path to the file to plot.
+    """
+    # Open the file and extract the sizes and luminosities
+    with h5py.File(filepath, "r") as hdf:
+        # Get the redshift (it's the same for all galaxies)
+        redshift = hdf["Galaxies/Redshift"][0]
+
+        print("Plotting the size-luminosity relation at z=", redshift)
+
+        sizes = hdf[
+            f"Galaxies/Stars/PixelHalfLightRadii/Luminosity/{spec_type}/UV1500"
+        ][...]
+        flux = hdf[f"Galaxies/Stars/Photometry/Luminosities/{spec_type}/UV1500"][...]
+
+    # Create the plot
+    if fig is None:
+        fig = plt.figure(figsize=(3.5, 3.5))
+        ax = fig.add_subplot(111)
+
+        # Add a grid and make sure its always at the back
+        ax.grid(True)
+        ax.set_axisbelow(True)
+
+    # Remove galaxies with no flux
+    mask = np.logical_and(flux > 0, sizes > 0)
+    flux = flux[mask]
+    sizes = sizes[mask]
+
+    # Fit the size-luminosity relation
+    popt, pcov = curve_fit(
+        size_lumin_fit,
+        flux,
+        sizes,
+        p0=[1, 0.5],
+    )
+    print(f"{filepath} Fitted parameters:", popt)
+
+    # Plot the fit
+    ax.plot(
+        flux,
+        size_lumin_fit(flux, *popt),
+        color="r",
+        linestyle="-",
+        label="",
+    )
+
+    ax.text(
+        0.95,
+        0.05,
+        f"$z={redshift:.1f}$",
+        bbox=dict(boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.8),
+        transform=ax.transAxes,
+        horizontalalignment="right",
+        fontsize=8,
+    )
+
+    # Set the axis labels
+    ax.set_xlabel(r"$L_{1500} / [\mathrm{erg / s / Hz}]$")
+    ax.set_ylabel(r"$R_{1/2} / [\mathrm{kpc}]$")
+
+    # Set the axis limits
+    if xlim is not None:
+        ax.set_xlim(xlim, None)
+    if ylim is not None:
+        ax.set_ylim(ylim, None)
+
+    fig.savefig(
+        outpath + f"UV_size_lum_hex_{spec_type}.png",
+        bbox_inches="tight",
+        dpi=300,
+    )
+
+
 def plot_size_flux_comp(filepath, filter, outpath):
     """
     Plot the size-luminosity relation.

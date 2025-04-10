@@ -8,6 +8,9 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import binned_statistic
 
+# Lstar = M_to_lum(-21)
+Lstar = 10**28.51
+
 
 def size_evolution_func(z, r0, m):
     """Fit the size evolution."""
@@ -77,6 +80,9 @@ def plot_size_evolution_medians(
         sizes = sizes[mask]
         redshifts = redshifts[mask]
         masses = masses[mask]
+
+    # Do the luminosity cut 0.3 * Lstar < L < Lstar
+    mask = np.logical_and(flux > 0.3 * Lstar, flux < Lstar)
 
     # Convert the sizes to kpc
     sizes = sizes * 1e3

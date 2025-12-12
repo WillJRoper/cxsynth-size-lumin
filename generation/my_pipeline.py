@@ -94,16 +94,75 @@ def load_galaxies(
     sph_kernel = Kernel()
     kernel_data = sph_kernel.get_kernel()
 
-    # Loop over galaxies and calculate the optical depths
+    # Loop over galaxies and calculate the column densities
     for gal in galaxies:
         if gal.gas.nparticles > 0:
-            gal.stars.tau_v = gal.get_stellar_los_tau_v(
-                kappa=0.0795,
+            # Calculate column densities for each dust grain type and hydrogen
+            # Small graphite (0.01 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="graphite_small_masses",
                 kernel=kernel_data,
+                column_density_attr="sigmalos_graphite_a0p01um",
+                nthreads=nthreads,
+            )
+            # Large graphite (0.1 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="graphite_large_masses",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_graphite_a0p1um",
+                nthreads=nthreads,
+            )
+            # Small silicates (0.01 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="silicate_small_masses",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_silicate_a0p01um",
+                nthreads=nthreads,
+            )
+            # Large silicates (0.1 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="silicate_large_masses",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_silicate_a0p1um",
+                nthreads=nthreads,
+            )
+            # Ionised PAH (0.005 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="pah_ionised_masses",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_pahionised_a0p005um",
+                nthreads=nthreads,
+            )
+            # Neutral PAH (0.005 µm)
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="pah_neutral_masses",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_pahneutral_a0p005um",
+                nthreads=nthreads,
+            )
+            # Hydrogen
+            gal.stars.get_los_column_density(
+                other_parts=gal.gas,
+                density_attr="h_mass",
+                kernel=kernel_data,
+                column_density_attr="sigmalos_H",
                 nthreads=nthreads,
             )
         else:
-            gal.stars.tau_v = np.zeros(gal.stars.nparticles)
+            # If no gas particles, set all column densities to zero
+            gal.stars.sigmalos_graphite_a0p01um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_graphite_a0p1um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_silicate_a0p01um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_silicate_a0p1um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_pahionised_a0p005um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_pahneutral_a0p005um = np.zeros(gal.stars.nparticles)
+            gal.stars.sigmalos_H = np.zeros(gal.stars.nparticles)
 
     return galaxies
 

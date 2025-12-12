@@ -108,6 +108,81 @@ def _pixel_hlr(img, pix_area):
     return hlr
 
 
+def _curve_of_growth_hlr(img):
+    """
+    Calculate the half-light radius using the curve of growth method.
+
+    This method computes the cumulative light as a function of radius from
+    the image center, then finds the radius containing half the total light.
+
+    Args:
+        img (Image): The image to calculate the half-light radius for.
+
+    Returns:
+        float: The half-light radius in units of the image resolution.
+    """
+    # Get the image array
+    arr = img.arr
+
+    # Get the center of the image (assume it's the galaxy center)
+    center_y, center_x = np.array(arr.shape) / 2.0
+
+    # Create coordinate grids
+    y, x = np.indices(arr.shape)
+
+    # Calculate radial distance of each pixel from center
+    radii = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+
+    # Get pixel values and radii as 1D arrays
+    flux = arr.flatten()
+    radii_flat = radii.flatten()
+
+    # Remove negative flux values (shouldn't happen but just in case)
+    mask = flux > 0
+    flux = flux[mask]
+    radii_flat = radii_flat[mask]
+
+    # Sort by radius
+    sort_idx = np.argsort(radii_flat)
+    radii_sorted = radii_flat[sort_idx]
+    flux_sorted = flux[sort_idx]
+
+    # Compute cumulative flux as a function of radius
+    cumulative_flux = np.cumsum(flux_sorted)
+    total_flux = cumulative_flux[-1]
+
+    # Handle edge case of zero total flux
+    if total_flux <= 0:
+        return 0.0
+
+    # Find the radius containing half the light
+    half_light = total_flux / 2.0
+
+    # Find the index where we cross half-light
+    hlr_idx = np.searchsorted(cumulative_flux, half_light)
+
+    # Handle edge cases
+    if hlr_idx == 0:
+        return radii_sorted[0]
+    if hlr_idx >= len(radii_sorted):
+        return radii_sorted[-1]
+
+    # Interpolate to get a more accurate half-light radius
+    r1, r2 = radii_sorted[hlr_idx - 1], radii_sorted[hlr_idx]
+    f1, f2 = cumulative_flux[hlr_idx - 1], cumulative_flux[hlr_idx]
+
+    # Linear interpolation
+    if f2 - f1 > 0:
+        hlr = r1 + (r2 - r1) * (half_light - f1) / (f2 - f1)
+    else:
+        hlr = r1
+
+    # Convert from pixels to physical units
+    hlr_physical = hlr * img._resolution
+
+    return hlr_physical
+
+
 def get_pixel_based_hlr(obj):
     """
     Get the half-light radius of the galaxy using the pixel technique.
@@ -150,6 +225,59 @@ def get_pixel_based_hlr(obj):
 
                 # Get the half-light radius
                 hlr = _pixel_hlr(img, pix_area)
+
+                # Store the results
+                results.setdefault(f"Luminosity/{spec_type}", {})[filt] = (
+                    hlr * img.resolution.units
+                ).to("kpc")
+
+    return results
+
+
+def get_curve_of_growth_hlr(obj):
+    """
+    Get the half-light radius using the curve of growth method.
+
+    This method computes cumulative light as a function of radius from the
+    center of each image, then interpolates to find the radius containing
+    half the total light.
+
+    Args:
+        obj (Galaxy/Stars): The galaxy or component to get the half-light radius for.
+
+    Returns:
+        dict: A dictionary containing the half-light radius for each instrument.
+    """
+    results = {}
+
+    # Loop over PSFed images
+    for inst_name, d in obj.images_psf_fnu.items():
+        # Loop over spectrum types
+        for spec_type, imgs in d.items():
+            # Loop over filters
+            for filt, img in imgs.items():
+                # Get the image
+                img = obj.images_psf_fnu[inst_name][spec_type][filt]
+
+                # Get the half-light radius using curve of growth
+                hlr = _curve_of_growth_hlr(img)
+
+                # Store the results
+                results.setdefault(f"Flux/{spec_type}", {})[filt] = (
+                    hlr * img.resolution.units
+                ).to("kpc")
+
+    # Also do the Rest frame luminosity
+    for inst_name, d in obj.images_lnu.items():
+        # Loop over spectrum types
+        for spec_type, imgs in d.items():
+            # Loop over filters
+            for filt, img in imgs.items():
+                # Get the image
+                img = obj.images_lnu[inst_name][spec_type][filt]
+
+                # Get the half-light radius using curve of growth
+                hlr = _curve_of_growth_hlr(img)
 
                 # Store the results
                 results.setdefault(f"Luminosity/{spec_type}", {})[filt] = (

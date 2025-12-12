@@ -13,7 +13,7 @@ from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
 from my_emission_models import LOSStellarEmission
-from my_extra_analysis import get_pixel_based_hlr
+from my_extra_analysis import get_curve_of_growth_hlr, get_pixel_based_hlr
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
@@ -413,16 +413,22 @@ if __name__ == "__main__":
         print("No galaxies found.")
         comm.Abort()
 
-    # Instruments need to be loaded
-    insts = InstrumentCollection(filepath=inst_path)
+    # Load instruments and split them up by purpose
+    all_insts = InstrumentCollection(filepath=inst_path)
 
-    # Set the resolution of the UV1500 insturment
-    insts["UV1500"].resolution = galaxies[0].physical_softening.to("kpc")
+    # Set the resolution of the UV1500 instrument
+    all_insts["UV1500"].resolution = galaxies[0].physical_softening.to("kpc")
 
-    # Set up the pipeline
+    # Split instruments for different purposes
+    # NIRCam and MIRI for photometry and PSF flux images
+    jwst_insts = all_insts["JWST.NIRCam"] + all_insts["JWST.MIRI"]
+
+    # UV1500 only for luminosity images (no flux needed)
+    uv_inst = all_insts["UV1500"]
+
+    # Set up the pipeline (instruments now passed to each operation independently)
     pipeline = Pipeline(
         emission_model=get_emission_model(grid_name, grid_dir),
-        instruments=insts,
         nthreads=nthreads,
         comm=comm,
     )
@@ -437,60 +443,43 @@ if __name__ == "__main__":
             ),
             f"Stars/MassRadii/{frac_key}",
         )
-        #     pipeline.add_analysis_func(
-        #         lambda gal, frac=frac: gal.gas.get_attr_radius(
-        #             "masses",
-        #             frac=frac,
-        #         ),
-        #         f"Gas/MassRadii/{frac_key}",
-        #     )
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius(
-                "dust_masses",
-                frac=frac,
-            ),
-            f"Gas/DustMassRadii/{frac_key}",
-        )
-    # pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
     pipeline.add_analysis_func(
         lambda gal: get_pixel_based_hlr(gal.stars),
         "Stars/PixelHalfLightRadii",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_curve_of_growth_hlr(gal.stars),
+        "Stars/CurveOfGrowthHalfLightRadii",
     )
     pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
     pipeline.add_analysis_func(
         lambda gal: gal.stars.total_mass,
         "Stars/StellarMass",
     )
-    # pipeline.add_analysis_func(
-    #     lambda gal: gal.stars.get_mass_weighted_optical_depth(),
-    #     "Stars/MassWeightedVBandOpticalDepth",
-    # )
 
     # Add them to the pipeline
     pipeline.add_galaxies(list(galaxies))
 
-    # Run the pipeline
-    # pipeline.get_spectra()
-    pipeline.get_photometry_luminosities()
-    pipeline.get_photometry_fluxes(cosmo=cosmo)
+    # Rest frame photometry with UV top hats, observed with JWST instruments
+    pipeline.get_photometry_luminosities(uv_inst)
+    pipeline.get_photometry_fluxes(jwst_insts, cosmo=cosmo)
 
+    # Luminosity images with UV1500 only
     pipeline.get_images_luminosity(
+        uv_inst,
         fov=61 * kpc if not fof_only else 1000 * kpc,
         kernel=kernel_data,
-        spectra_type=(
-            "reprocessed",
-            "stellar_total",
-        ),
-        instrument_subset=("UV1500",),
+        labels=["reprocessed", "stellar_total"],
         write=False if part_limit < 1000 else True,
     )
-    pipeline.get_images_flux_psfs(
+
+    # PSF flux images with JWST instruments (NIRCam + MIRI)
+    pipeline.get_images_flux(
+        jwst_insts,
         fov=61 * kpc if not fof_only else 1000 * kpc,
         kernel=kernel_data,
-        spectra_type=(
-            "reprocessed",
-            "stellar_total",
-        ),
+        cosmo=cosmo,
+        labels=["reprocessed", "stellar_total"],
         write=False if part_limit < 1000 else True,
     )
 

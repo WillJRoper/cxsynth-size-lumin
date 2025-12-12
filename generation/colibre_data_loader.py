@@ -166,6 +166,7 @@ def _get_galaxies(
     cosmo,
     aperture,
     fof_only,
+    pah_fraction=0.1,
 ):
     """
     Get a galaxy from the master file.
@@ -177,6 +178,8 @@ def _get_galaxies(
         cosmo (astropy.cosmology): The cosmology to use.
         aperture (float): The aperture to use.
         fof_only (bool): Whether to only load the FOF groups.
+        pah_fraction (float): Fraction of small graphite to allocate to PAHs.
+            Default is 0.1 (10%).
 
     Returns:
         np.ndarray: An array of galaxy objects.
@@ -249,18 +252,53 @@ def _get_galaxies(
         star_metals = swift_gal.stars.metal_mass_fractions
         young_tau_v = star_metals.to_value() / 0.01
 
-        # Derive the dust masses by summing the different dust species
-        # fractions
-        dust_mass_fracs = np.sum(
-            np.vstack(
-                [getattr(swift_gal.gas.dust_mass_fractions, kk) for kk in dcols]
-            ).T,
-            axis=1,
-        )
-
-        # Convert the dust fractions to masses
+        # Derive the individual dust grain masses (not summed)
+        # We separate into 4 components: small/large carbonates and silicates
         gas_masses = swift_gal.gas.masses.to("Msun")
-        dmasses = dust_mass_fracs * gas_masses
+
+        # Graphite (carbonates) and PAHs
+        graphite_small_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "GraphiteSmall"
+        )
+        graphite_large_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "GraphiteLarge"
+        )
+        graphite_small_total = graphite_small_frac * gas_masses
+        graphite_large_masses = graphite_large_frac * gas_masses
+
+        # Split small graphite into PAH and graphite components
+        # PAHs are very small carbonaceous grains
+        pah_total_masses = pah_fraction * graphite_small_total
+        graphite_small_masses = (1 - pah_fraction) * graphite_small_total
+
+        # Assume 50/50 split between ionized and neutral PAH
+        pah_ionised_masses = 0.5 * pah_total_masses
+        pah_neutral_masses = 0.5 * pah_total_masses
+
+        # Silicates (sum Mg and Fe silicates for each size)
+        mg_silicate_small_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "MgSilicatesSmall"
+        )
+        fe_silicate_small_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "FeSilicatesSmall"
+        )
+        mg_silicate_large_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "MgSilicatesLarge"
+        )
+        fe_silicate_large_frac = getattr(
+            swift_gal.gas.dust_mass_fractions, "FeSilicatesLarge"
+        )
+        silicate_small_masses = (
+            mg_silicate_small_frac + fe_silicate_small_frac
+        ) * gas_masses
+        silicate_large_masses = (
+            mg_silicate_large_frac + fe_silicate_large_frac
+        ) * gas_masses
+
+        # Get hydrogen mass from element mass fractions
+        # COLIBRE stores element mass fractions in species_fractions
+        h_frac = getattr(swift_gal.gas.element_mass_fractions, "hydrogen")
+        h_masses = h_frac * gas_masses
 
         # Ensure all arrays are contiguous (we need this for the C extension
         # to not produce garbage)
@@ -329,9 +367,51 @@ def _get_galaxies(
             ),
             "Msun",
         )
-        gas_dust_masses = unyt_array(
+        gas_graphite_small_masses = unyt_array(
             np.ascontiguousarray(
-                dmasses.to_value("Msun")[gas_mask],
+                graphite_small_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_graphite_large_masses = unyt_array(
+            np.ascontiguousarray(
+                graphite_large_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_silicate_small_masses = unyt_array(
+            np.ascontiguousarray(
+                silicate_small_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_silicate_large_masses = unyt_array(
+            np.ascontiguousarray(
+                silicate_large_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_pah_ionised_masses = unyt_array(
+            np.ascontiguousarray(
+                pah_ionised_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_pah_neutral_masses = unyt_array(
+            np.ascontiguousarray(
+                pah_neutral_masses.to_value("Msun")[gas_mask],
+                dtype=np.float64,
+            ),
+            "Msun",
+        )
+        gas_h_masses = unyt_array(
+            np.ascontiguousarray(
+                h_masses.to_value("Msun")[gas_mask],
                 dtype=np.float64,
             ),
             "Msun",
@@ -383,7 +463,13 @@ def _get_galaxies(
                 metallicities=gas_metals,
                 coordinates=gas_coords,
                 smoothing_lengths=gas_smls,
-                dust_masses=gas_dust_masses,
+                graphite_small_masses=gas_graphite_small_masses,
+                graphite_large_masses=gas_graphite_large_masses,
+                silicate_small_masses=gas_silicate_small_masses,
+                silicate_large_masses=gas_silicate_large_masses,
+                pah_ionised_masses=gas_pah_ionised_masses,
+                pah_neutral_masses=gas_pah_neutral_masses,
+                h_mass=gas_h_masses,
                 radii=gas_radii,
                 redshift=redshift,
             ),

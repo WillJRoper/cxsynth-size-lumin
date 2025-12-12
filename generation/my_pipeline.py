@@ -35,6 +35,7 @@ def load_galaxies(
     aperture,
     nthreads=1,
     fof_only=False,
+    pah_fraction=0.1,
 ):
     """
     Load the galaxies into memory.
@@ -47,6 +48,7 @@ def load_galaxies(
         aperture (float): The aperture to use.
         nthreads (int): The number of threads to use.
         fof_only (bool): If True, only load the FOF groups.
+        pah_fraction (float): Fraction of small graphite to allocate to PAHs.
 
     Returns:
         list: The list of galaxies.
@@ -57,7 +59,9 @@ def load_galaxies(
 
     # If we aren't multithreaded then just load the galaxies
     if nthreads == 1 or nthreads == 0 or partition.size < nthreads:
-        galaxies = _get_galaxies(partition, location, snap, cosmo, aperture, fof_only)
+        galaxies = _get_galaxies(
+            partition, location, snap, cosmo, aperture, fof_only, pah_fraction
+        )
 
     # Otherwise, distribute the read
     else:
@@ -69,6 +73,7 @@ def load_galaxies(
             cosmo=cosmo,
             aperture=aperture,
             fof_only=fof_only,
+            pah_fraction=pah_fraction,
         )
 
         # Equally split the partition into nthreads chunks
@@ -95,6 +100,7 @@ def load_galaxies(
             gal.stars.tau_v = gal.get_stellar_los_tau_v(
                 kappa=0.0795,
                 kernel=kernel_data,
+                nthreads=nthreads,
             )
         else:
             gal.stars.tau_v = np.zeros(gal.stars.nparticles)
@@ -199,6 +205,14 @@ if __name__ == "__main__":
         help="If true, only load the FOF groups.",
     )
 
+    # PAH fraction
+    parser.add_argument(
+        "--pah-fraction",
+        type=float,
+        help="Fraction of small graphite to allocate to PAHs (default: 0.1).",
+        default=0.1,
+    )
+
     # Get MPI info
     comm = mpi.COMM_WORLD
     rank = comm.Get_rank()
@@ -218,6 +232,7 @@ if __name__ == "__main__":
     # Switches for behaviour
     part_limit = args.part_limit
     fof_only = args.fof_only
+    pah_fraction = args.pah_fraction
 
     # Some metadata we'll use
     aperture = args.aperture
@@ -330,6 +345,7 @@ if __name__ == "__main__":
         aperture=aperture,
         nthreads=nthreads,
         fof_only=fof_only,
+        pah_fraction=pah_fraction,
     )
     print(f"Reading took {time.perf_counter() - read_start:.2f} seconds.")
 

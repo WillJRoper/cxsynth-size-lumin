@@ -11,9 +11,21 @@ from synthesizer.emission_models import (
     TemplateEmission,
     TransmittedEmission,
 )
+from synthesizer.emission_models.attenuation import DraineLiGrainCurves
 from synthesizer.emission_models.transformers import PowerLaw
 from synthesizer.grid import Template
 from unyt import Hz, Myr, angstrom, erg, s
+
+DUST_CURVE_FILE = "dust_extcurve_draine_li_lognormal_asmall0p01_alarge0p1_apah0p005"
+
+# Define the input grain properties we want to be using, this is in the format
+# grain: bin centers
+GRAIN_DICT = {
+    "graphite": [0.01, 0.1],
+    "silicate": [0.01, 0.1],
+    "pahionised": [0.005],
+    "pahneutral": [0.005],
+}
 
 
 class LOSStellarEmission(EmissionModel):
@@ -428,6 +440,233 @@ class LOSCombinedEmission(EmissionModel):
             combine=(agn_attenuated, total_stellar),
             related_models=[gal_intrinsic, gal_dust_free_agn],
             emitter="galaxy",
+        )
+
+        self.set_per_particle(True)
+
+
+class ColibreLOSEmission(EmissionModel):
+    """
+    The stellar emission model used for in FLARES.
+
+    TODO: update this with the current LOSStellarEmission from Synthesizer.
+    """
+
+    def __init__(self, grid):
+        """
+        Initialize the Emission model.
+
+        Args:
+            grid (Grid): The grid to use for the model.
+        """
+        # Define the nebular emission models
+        nebular = NebularEmission(
+            grid=grid,
+            label="nebular",
+            mask_attr="ages",
+            mask_op="<=",
+            mask_thresh=10 * Myr,
+        )
+
+        # Define the transmitted models
+        young_transmitted = TransmittedEmission(
+            grid=grid,
+            label="young_transmitted",
+            mask_attr="ages",
+            mask_op="<=",
+            mask_thresh=10 * Myr,
+        )
+        old_transmitted = TransmittedEmission(
+            grid=grid,
+            label="old_transmitted",
+            mask_attr="ages",
+            mask_op=">",
+            mask_thresh=10 * Myr,
+        )
+        transmitted = StellarEmissionModel(
+            grid=grid,
+            label="transmitted",
+            combine=[young_transmitted, old_transmitted],
+        )
+
+        # Define the reprocessed models
+        young_reprocessed = ReprocessedEmission(
+            grid=grid,
+            label="young_reprocessed",
+            transmitted=young_transmitted,
+            nebular=nebular,
+            mask_attr="ages",
+            mask_op="<=",
+            mask_thresh=10 * Myr,
+        )
+        reprocessed = StellarEmissionModel(
+            grid=grid,
+            label="reprocessed",
+            combine=[young_reprocessed, old_transmitted],
+        )
+
+        # Define the attenuated models
+        young_attenuated_nebular = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_nebular",
+            apply_dust_to=young_reprocessed,
+            tau_v="young_tau_v",
+            dust_curve=PowerLaw(slope=-1),
+            mask_attr="ages",
+            mask_op="<=",
+            mask_thresh=10 * Myr,
+        )
+
+        # Set up the attenuation based on carbonates and silicates (both
+        # large and small grain)
+        young_carbonate_small_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_carbonates_small",
+            apply_dust_to=young_attenuated_nebular,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "graphite": [0.01],
+                },
+            ),
+        )
+        young_carbonate_large_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_carbonates_large",
+            apply_dust_to=young_carbonate_small_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "graphite": [0.1],
+                },
+            ),
+        )
+        young_silicate_small_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_silicates_small",
+            apply_dust_to=young_carbonate_large_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "silicate": [0.01],
+                },
+            ),
+        )
+        young_silicate_large_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_silicates_large",
+            apply_dust_to=young_silicate_small_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "silicate": [0.1],
+                },
+            ),
+        )
+        young_pah_ionised_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated_pah_ionised",
+            apply_dust_to=young_silicate_large_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "pahionised": [0.005],
+                },
+            ),
+        )
+        young_pah_neutral_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="young_attenuated",
+            apply_dust_to=young_pah_ionised_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "pahneutral": [0.005],
+                },
+            ),
+        )
+        young_attenuated = young_pah_neutral_attenuated
+        old_carbonate_small_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated_carbonates_small",
+            apply_dust_to=old_transmitted,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "graphite": [0.01],
+                },
+            ),
+        )
+        old_carbonate_large_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated_carbonates_large",
+            apply_dust_to=old_carbonate_small_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "graphite": [0.1],
+                },
+            ),
+        )
+        old_silicate_small_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated_silicates_small",
+            apply_dust_to=old_carbonate_large_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "silicate": [0.01],
+                },
+            ),
+        )
+        old_silicate_large_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated_silicates_large",
+            apply_dust_to=old_silicate_small_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "silicate": [0.1],
+                },
+            ),
+        )
+        old_pah_ionised_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated_pah_ionised",
+            apply_dust_to=old_silicate_large_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "pahionised": [0.005],
+                },
+            ),
+        )
+        old_pah_neutral_attenuated = StellarEmissionModel(
+            grid=grid,
+            label="old_attenuated",
+            apply_dust_to=old_pah_ionised_attenuated,
+            dust_curve=DraineLiGrainCurves(
+                grid_name=DUST_CURVE_FILE,
+                grain_dict={
+                    "pahneutral": [0.005],
+                },
+            ),
+        )
+        old_attenuated = old_pah_neutral_attenuated
+
+        # Finally, combine to get the emergent emission
+        EmissionModel.__init__(
+            self,
+            grid=grid,
+            label="stellar_total",
+            combine=[young_attenuated, old_attenuated],
+            related_models=[
+                nebular,
+                transmitted,
+                reprocessed,
+                young_attenuated_nebular,
+            ],
+            emitter="stellar",
         )
 
         self.set_per_particle(True)

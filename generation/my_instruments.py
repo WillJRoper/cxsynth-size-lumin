@@ -4,7 +4,7 @@ import argparse
 import os
 
 import h5py
-import webbpsf
+import stpsf
 from synthesizer.instruments import FilterCollection
 from synthesizer.instruments.instrument import Instrument
 from unyt import angstrom, arcsecond
@@ -108,11 +108,11 @@ def make_psfs(filt_path):
     nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
     miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
 
-    # Set up the PSF dictionaries and webbpsf objects
+    # Set up the PSF dictionaries and stpsf objects
     nircam_psfs = {}
     miri_psfs = {}
-    nc = webbpsf.NIRCam()
-    miri = webbpsf.MIRI()
+    nc = stpsf.NIRCam()
+    miri = stpsf.MIRI()
 
     # Get nircam PSFs
     for nc_filt in nircam_fs.filter_codes:

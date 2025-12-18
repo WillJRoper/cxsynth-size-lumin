@@ -141,7 +141,7 @@ def make_psfs(filt_path):
     return nircam_psfs, miri_psfs
 
 
-def make_instruments(inst_path, filt_path, nircam_psfs, miri_psfs):
+def make_instruments(inst_path, nircam_psfs, miri_psfs):
     """
     Generate the instrument files for the COLIBRE analysis.
 
@@ -149,8 +149,8 @@ def make_instruments(inst_path, filt_path, nircam_psfs, miri_psfs):
         inst_path (str): The path to save the instruments.
     """
     # Define the filters
-    nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
-    miri_fs = FilterCollection(path=filt_path + "/miri_filters.hdf5")
+    nircam_fs = FilterCollection(path=inst_path + "/nircam_filters.hdf5")
+    miri_fs = FilterCollection(path=inst_path + "/miri_filters.hdf5")
     top_hat = FilterCollection(
         tophat_dict={
             "UV1500": {"lam_eff": 1500 * angstrom, "lam_fwhm": 300 * angstrom},
@@ -192,56 +192,31 @@ if __name__ == "__main__":
 
     # Which simulation?
     parser.add_argument(
-        "--run-dir",
+        "--out-dir",
+        "-O",
         type=str,
-        help="The directory of the simulation.",
-        default="/cosma8/data/dp004/colibre/Runs/",
+        help="The directory to store the instruments in. Default is current directory.",
+        default="./",
     )
     parser.add_argument(
-        "--run-name",
+        "--outname",
+        "-o",
         type=str,
-        help="The name of the simulation (the directory in run-dir).",
-        default="L025_m7",
-    )
-    parser.add_argument(
-        "--variant",
-        type=str,
-        help="The variant of the simulation (e.g. THERMAL_AGN_m6/HYBRID_AGN_m7).",
-        default="THERMAL_AGN_m7",
-    )
-    parser.add_argument(
-        "--aperture",
-        type=int,
-        help="The aperture to use for the observations.",
-        default=100,
+        help="The name of the instrument file. Default is 'instruments.hdf5'.",
+        default="instruments.hdf5",
     )
     args = parser.parse_args()
 
-    run_folder = args.run_dir
-    run_name = args.run_name
-    variant = args.variant
-    aperture = args.aperture
+    # Unpack arguments
+    out_dir = args.out_dir
+    out_name = args.outname
 
-    # Define the whole path to the data
-    path = f"{run_folder}/{run_name}/{variant}/"
-
-    # Define the path to the filter data
-    # (this is the same for all snapshots)
-    filt_path = "../data"
-
-    # Make the filters if they don't exist
-    if not os.path.exists("../data/nircam_filters.hdf5") or not os.path.exists(
-        "../data/miri_filters.hdf5"
-    ):
-        make_filters(filt_path)
-
-    # Create the directory if it doesn't exist
-    if not os.path.exists(f"../data/{run_name}/{variant}"):
-        os.makedirs(f"../data/{run_name}/{variant}")
+    # Get filters
+    make_filters(out_dir)
 
     # Make the PSFs
-    nircam_psfs, miri_psfs = make_psfs(filt_path)
+    nircam_psfs, miri_psfs = make_psfs(out_dir)
 
     # Define the instrument path
-    inst_path = f"../data/{run_rame}/{variant}/instruments.hdf5"
-    make_instruments(inst_path, filt_path, nircam_psfs, miri_psfs)
+    inst_path = f"{out_dir}/{out_name}"
+    make_instruments(inst_path, nircam_psfs, miri_psfs)

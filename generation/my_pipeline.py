@@ -357,7 +357,7 @@ if __name__ == "__main__":
     outpath += ".hdf5"
 
     # Define the instrument path
-    inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
+    inst_path = f"../data/{run_name}/{variant}/instruments.hdf5"
 
     # Create the directory if it doesn't exist
     if rank == 0 and not os.path.exists(f"../data/{run_name}/{variant}"):

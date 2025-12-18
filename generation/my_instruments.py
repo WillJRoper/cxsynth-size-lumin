@@ -5,10 +5,9 @@ import os
 
 import h5py
 import webbpsf
-from astropy.cosmology import Planck18 as cosmo
 from synthesizer.instruments import FilterCollection
 from synthesizer.instruments.instrument import Instrument
-from unyt import Mpc, angstrom, arcsecond, kpc
+from unyt import angstrom, arcsecond
 
 
 def angular_to_physical(angular_res_arcsec, distance):
@@ -142,13 +141,12 @@ def make_psfs(filt_path):
     return nircam_psfs, miri_psfs
 
 
-def make_instruments(inst_path, filt_path, z, nircam_psfs, miri_psfs):
+def make_instruments(inst_path, filt_path, nircam_psfs, miri_psfs):
     """
     Generate the instrument files for the COLIBRE analysis.
 
     Args:
         inst_path (str): The path to save the instruments.
-        z (float): The redshift of the galaxies.
     """
     # Define the filters
     nircam_fs = FilterCollection(path=filt_path + "/nircam_filters.hdf5")
@@ -159,49 +157,27 @@ def make_instruments(inst_path, filt_path, z, nircam_psfs, miri_psfs):
         },
     )
 
-    # Define the angular resoltions
+    # Define the angular resolutions
     nircam_res = 0.031 * arcsecond
     miri_res = 0.111 * arcsecond
-
-    # Convert the angular resolutions to physical kpc.
-    # NOTE: When the luminosity distance is less than 10 Mpc we just take the
-    # resolution at 10 Mpc.
-    arcsec_to_kpc = (
-        cosmo.kpc_proper_per_arcmin(z).to("kpc/arcsec").value * kpc / arcsecond
-    )
-
-    # Get the luminosity distance
-    d_lum = cosmo.luminosity_distance(z).to("Mpc").value
-    if d_lum >= 10:
-        nircam_res_spatial = arcsec_to_kpc * nircam_res
-        miri_res_spatial = arcsec_to_kpc * miri_res
-    else:
-        nircam_res_spatial = angular_to_physical(
-            angular_res_arcsec=nircam_res,
-            distance=10 * Mpc,
-        )
-        miri_res_spatial = angular_to_physical(
-            angular_res_arcsec=miri_res,
-            distance=10 * Mpc,
-        )
 
     # Set up the instruments
     nircam = Instrument(
         "JWST.NIRCam",
         filters=nircam_fs,
         psfs=nircam_psfs,
-        resolution=nircam_res_spatial,
+        resolution=nircam_res,
     )
     miri = Instrument(
         "JWST.MIRI",
         filters=miri_fs,
         psfs=miri_psfs,
-        resolution=miri_res_spatial,
+        resolution=miri_res,
     )
     uv = Instrument(
         "UV1500",
         filters=top_hat,
-        resolution=2.66 / (1 + z) * kpc,
+        resolution=0.01 * arcsecond,
     )
 
     # Combine them
@@ -266,28 +242,6 @@ if __name__ == "__main__":
     # Make the PSFs
     nircam_psfs, miri_psfs = make_psfs(filt_path)
 
-    # Loop over possible snapshots
-    for snap_ind in range(0, 128):
-        snap = str(snap_ind).zfill(4)
-
-        # Read in the redshift and while we do it make sure we actually have
-        # SOAP data for this snap
-        try:
-            with h5py.File(f"{path}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
-                redshift = hf["Cosmology"].attrs["Redshift"][0]
-        except FileNotFoundError:
-            print(f"No SOAP data for snapshot {snap}.")
-            continue
-
-        # Check that we have the aperture
-        with h5py.File(f"{path}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
-            if f"{aperture}kpc" not in hf["ExclusiveSphere"]:
-                print(f"No {aperture}kpc aperture for snapshot {snap}.")
-                continue
-
-        # Define the instrument path
-        inst_path = f"../data/{run_name}/{variant}/instruments_{snap}.hdf5"
-
-        print(f"Making instruments for snapshot {snap} at redshift {redshift}.")
-
-        make_instruments(inst_path, filt_path, redshift, nircam_psfs, miri_psfs)
+    # Define the instrument path
+    inst_path = f"../data/{run_rame}/{variant}/instruments.hdf5"
+    make_instruments(inst_path, filt_path, nircam_psfs, miri_psfs)

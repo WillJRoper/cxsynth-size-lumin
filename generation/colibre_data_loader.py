@@ -150,7 +150,7 @@ def _set_up_swift_galaxy(
 
     # Load the SWIFT galaxies object (this is the interface to the data)
     sgs = SWIFTGalaxies(
-        f"{location}/SOAP/colibre_with_SOAP_membership_{snap}.hdf5",
+        f"{location}/SOAP-HBT/colibre_with_SOAP_membership_{snap}.hdf5",
         soap,
         preload=preload,
         auto_recentre=True,

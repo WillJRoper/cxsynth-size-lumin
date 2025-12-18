@@ -17,7 +17,7 @@ def partition_galaxies(location, snap, part_limit, aperture, fof_only):
     this_rank = mpi.COMM_WORLD.Get_rank()
 
     # Load the SWIFT galaxy catalogue
-    cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
+    cat = swiftsimio.load(f"{location}/SOAP-HBT/halo_properties_{snap}.hdf5")
 
     # Get the number of star particles in the exclusive sphere
     nstars = getattr(
@@ -89,7 +89,7 @@ def _set_up_swift_galaxy(
             the scale factor, and the redshift.
     """
     # Read in some useful metadata
-    with h5py.File(f"{location}/SOAP/halo_properties_{snap}.hdf5") as hf:
+    with h5py.File(f"{location}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
         aexp = hf["Cosmology"].attrs["Scale-factor"]
         redshift = hf["Cosmology"].attrs["Redshift"]
         comoving_soft = (
@@ -115,7 +115,7 @@ def _set_up_swift_galaxy(
     # Define the custom spatial offset if we need one
     custom_spatial_offsets = None
     if fof_only:
-        cat = swiftsimio.load(f"{location}/SOAP/halo_properties_{snap}.hdf5")
+        cat = swiftsimio.load(f"{location}/SOAP-HBT/halo_properties_{snap}.hdf5")
         # Get the FOF group centre
         custom_spatial_offsets = cosmo_array(
             [[-1, 1], [-1, 1], [-1, 1]],
@@ -126,7 +126,7 @@ def _set_up_swift_galaxy(
         )
 
     soap = SOAP(
-        f"{location}/SOAP/halo_properties_{snap}.hdf5",
+        f"{location}/SOAP-HBT/halo_properties_{snap}.hdf5",
         soap_index=chunk_inds,
         extra_mask="bound_only" if not fof_only else "fof",
         custom_spatial_offsets=custom_spatial_offsets,

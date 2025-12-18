@@ -273,14 +273,14 @@ if __name__ == "__main__":
         # Read in the redshift and while we do it make sure we actually have
         # SOAP data for this snap
         try:
-            with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+            with h5py.File(f"{path}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
                 redshift = hf["Cosmology"].attrs["Redshift"][0]
         except FileNotFoundError:
             print(f"No SOAP data for snapshot {snap}.")
             continue
 
         # Check that we have the aperture
-        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+        with h5py.File(f"{path}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
             if f"{aperture}kpc" not in hf["ExclusiveSphere"]:
                 print(f"No {aperture}kpc aperture for snapshot {snap}.")
                 continue

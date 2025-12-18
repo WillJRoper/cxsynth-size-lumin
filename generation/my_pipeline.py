@@ -273,6 +273,14 @@ if __name__ == "__main__":
         default=0.1,
     )
 
+    # Path to the instruments file
+    parser.add_argument(
+        "--inst-path",
+        type=str,
+        help="The path to the instruments file. Default is './instruments.hdf5'.",
+        default="./instruments.hdf5",
+    )
+
     # Get MPI info
     comm = mpi.COMM_WORLD
     rank = comm.Get_rank()
@@ -288,6 +296,7 @@ if __name__ == "__main__":
     run_folder = args.run_dir
     run_name = args.run_name
     variant = args.variant
+    inst_path = args.inst_path
 
     # Switches for behaviour
     part_limit = args.part_limit
@@ -355,9 +364,6 @@ if __name__ == "__main__":
     if fof_only:
         outpath += "_FOFGroups"
     outpath += ".hdf5"
-
-    # Define the instrument path
-    inst_path = f"../data/{run_name}/{variant}/instruments.hdf5"
 
     # Create the directory if it doesn't exist
     if rank == 0 and not os.path.exists(f"../data/{run_name}/{variant}"):

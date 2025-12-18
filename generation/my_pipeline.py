@@ -12,7 +12,7 @@ import numpy as np
 from astropy.cosmology import w0waCDM
 from colibre_data_loader import _get_galaxies, partition_galaxies
 from mpi4py import MPI as mpi
-from my_emission_models import LOSStellarEmission
+from my_emission_models import ColibreLOSEmission
 from my_extra_analysis import get_curve_of_growth_hlr, get_pixel_based_hlr
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
@@ -179,7 +179,7 @@ def get_emission_model(
         grid_dir,
         lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
     )
-    model = LOSStellarEmission(grid)
+    model = ColibreLOSEmission(grid)
 
     # # Limit the spectra to be saved
     # model.save_spectra("attenuated", "reprocessed")
@@ -202,7 +202,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grid-dir",
         type=str,
-        help="The directory to save the grid.",
+        default=None,
+        help="The directory to save the grid (default: None, uses Synthesizer default).",
     )
 
     # What snapshot are we using?
@@ -305,7 +306,7 @@ if __name__ == "__main__":
     # Read in the redshift and while we do it make sure we actually have
     # SOAP data for this snap
     try:
-        with h5py.File(f"{path}/SOAP/halo_properties_{snap}.hdf5") as hf:
+        with h5py.File(f"{path}/SOAP-HBT/halo_properties_{snap}.hdf5") as hf:
             redshift = hf["Cosmology"].attrs["Redshift"][0]
     except FileNotFoundError:
         print(f"No SOAP data for snapshot {snap}.")

@@ -177,7 +177,7 @@ def get_emission_model(
     grid = Grid(
         grid_name,
         grid_dir,
-        lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
+        lam_lims=(900 * angstrom, 6 * 10**4 * angstrom),
     )
     model = ColibreLOSEmission(grid)
 
